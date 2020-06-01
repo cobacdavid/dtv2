@@ -3,6 +3,10 @@ import string
 import locale
 
 
+def split_list(L):
+    return [L[i:i + 5] for i in range(0, len(L), 5)]
+
+
 class Kbd:
     #
     vendor_id = 0x416
@@ -95,15 +99,51 @@ class Kbd:
 
     def __trame_couleur_touche(self, id_key, couleur_RGB):
         """ attribue une couleur à UNE touche particulière
-        id_touche: identifiant de la touche tel que sur le dictionnaire (clé)
-        couleur_hexa_RGB: couleur sous forme d'un tuple/liste (RGB) d'entiers
+        id_key: identifiant de la touche tel que sur le dictionnaire (clé)
+        couleur_RGB: couleur sous forme d'un tuple/liste (RGB) d'entiers
         """
 
         key = [Kbd.keys[id_key]] + [0] * 4
         couleurs = [*couleur_RGB] + [0xf]
         couleurs += [0, 0, 0, 0xff] * 4
-        trame = self.com_prefixe + key + couleurs
-        if len(trame) == 32:
+        trame = self.com_prefixe + key + couleurs[:-1]
+        if len(trame) == 31:
+            self.trame = trame
+        else:
+            self.trame = None
+
+    def __trame_couleur_plusieurs_touches(self, id_keys, couleurs_RGB):
+        """attribue les couleurs à plusieurs touches
+
+        id_keys: liste d'identifiants des touches tels que sur le
+        dictionnaire (clé)
+
+        couleurs_RGB: liste de couleurs sous forme de tuples/listes
+        (RGB) d'entiers
+
+        la longeur des lises doit être inférieur ou égal à 5
+        """
+
+        if len(id_keys) != len(couleurs_RGB):
+            self.trame = None
+        else:
+            trame = []
+            nb_restant = 5 - len(id_keys)
+            #
+            for id_key in id_keys:
+                trame += [Kbd.keys[id_key]]
+            trame += [0] * nb_restant
+            #
+            for couleur_RGB in couleurs_RGB:
+                # 0x0 : le spacer... utile ?
+                # 0 c'est bien aussi mais on reconnaît avec cette
+                # écriture spéciale un truc ... spécial
+                trame += [*couleur_RGB] + [0x0]
+            trame += [0, 0, 0, 0x0] * nb_restant
+            #
+            # on enlève le dernier spacer !
+            trame = self.com_prefixe + trame[:-1]
+        if len(trame) == 31:
             self.trame = trame
         else:
             self.trame = None
@@ -151,8 +191,14 @@ class Kbd:
         """demande l'application d'un changement sur l'ensemble des touches
         """
 
-        for id_key in Kbd.keys:
+        # Kbd.keys est un dict
+        # Kbd.keys.keys() est un dict_keys
+        # list(Kbd.keys.keys()) est une liste
+        for liste_cinq_touches in split_list(list(Kbd.keys.keys())):
             self.__ouverture_device()
-            self.__trame_couleur_touche(id_key, couleur_RGB)
+            self.__trame_couleur_plusieurs_touches(
+                liste_cinq_touches,
+                [couleur_RGB] * len(liste_cinq_touches)
+            )
             if self.__ecriture_device() == -1:
                 raise Exception('erreur...')
