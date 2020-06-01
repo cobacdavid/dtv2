@@ -7,7 +7,7 @@ def split_list(L):
     return [L[i:i + 5] for i in range(0, len(L), 5)]
 
 
-class Kbd:
+class dtv2:
     #
     vendor_id = 0x416
     product_id = 0xa0f8
@@ -77,7 +77,7 @@ class Kbd:
         retourne un booléen
         """
 
-        interfaces = hid.enumerate(Kbd.vendor_id, Kbd.product_id)
+        interfaces = hid.enumerate(dtv2.vendor_id, dtv2.product_id)
         # si présent mais pas accessible (cf. /etc/udev/rules.d)
         # cette chaîne est vide
         if interfaces[1]['product_string'] == '':
@@ -103,7 +103,7 @@ class Kbd:
         couleur_RGB: couleur sous forme d'un tuple/liste (RGB) d'entiers
         """
 
-        key = [Kbd.keys[id_key]] + [0] * 4
+        key = [dtv2.keys[id_key]] + [0] * 4
         couleurs = [*couleur_RGB] + [0xf]
         couleurs += [0, 0, 0, 0xff] * 4
         trame = self.com_prefixe + key + couleurs[:-1]
@@ -131,7 +131,7 @@ class Kbd:
             nb_restant = 5 - len(id_keys)
             #
             for id_key in id_keys:
-                trame += [Kbd.keys[id_key]]
+                trame += [dtv2.keys[id_key]]
             trame += [0] * nb_restant
             #
             for couleur_RGB in couleurs_RGB:
@@ -191,10 +191,10 @@ class Kbd:
         """demande l'application d'un changement sur l'ensemble des touches
         """
 
-        # Kbd.keys est un dict
-        # Kbd.keys.keys() est un dict_keys
-        # list(Kbd.keys.keys()) est une liste
-        for liste_cinq_touches in split_list(list(Kbd.keys.keys())):
+        # dtv2.keys est un dict
+        # dtv2.keys.keys() est un dict_keys
+        # list(dtv2.keys.keys()) est une liste
+        for liste_cinq_touches in split_list(list(dtv2.keys.keys())):
             self.__ouverture_device()
             self.__trame_couleur_plusieurs_touches(
                 liste_cinq_touches,
