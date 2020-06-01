@@ -1,4 +1,4 @@
-from dtv2 import *
+from .dtv2 import *
 
 
 if __name__ == "__main__":
