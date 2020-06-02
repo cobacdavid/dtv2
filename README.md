@@ -1,8 +1,8 @@
 ## Installation
 
-1. Put the ` 99-drevo-tyrfing.rules` in the `/etc/udev/rules.d`
-   directory to grant user permissions for to send/write
-   informations to the keyboard.
+1. Copy the ` 99-drevo-tyrfing.rules` in the `/etc/udev/rules.d/`
+   directory to grant user with permissions for to send/write
+   informations to the keyboard. Restart or `# udevadm trigger`.
 
 2. `pip3 install dtv2`
 
@@ -10,7 +10,14 @@
    to change keys colors (whole keyboard, categories and/or just
    some keys) using svg color names. See examples at the end.
 
-## Drevo Tyrfing helper functions
+## Requirements
+
+`dtv2` needs `hidapi` library: `pip3 install hidapi`
+
+`tyrfingcfg.py` example script needs `colour` library: `pip3 install colour`
+
+
+## Change colors: keyboard, category or key
 
 Python module to manage key color assignments on the Drevo Tyrfing
 v2 keyboard.
