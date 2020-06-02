@@ -1,0 +1,18 @@
+{"kbd": "lightseagreen",
+ "cat": {"mod": "dimgray",
+         "letters": "gray"},
+ "key": {"PS": "black",
+         "SL": "black",
+         "PB": "black",
+         "²": "black",
+         "ins": "black",
+         "compo": "black",
+         "space": "gray",
+         "lctrl": "red",
+         "rctrl": "black",
+         "alt": "white",
+         "home": "black",
+         "end": "black",
+         "caps": "black",
+         "f4": "red"}
+}

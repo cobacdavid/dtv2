@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+import argparse
+import dtv2
+import colour
+import json
+
+
+parseur_args = argparse.ArgumentParser(
+    description="""Change Drevo tyrfing keys colors""")
+parseur_args.add_argument('filename', help='config_file_name')
+args = parseur_args.parse_args()
+
+
+def apply_changes(kbd, dico):
+    kbd.change_kbd_color((0, 0, 0))
+    if 'kbd' in dico:
+        kbd.change_kbd_color(colour.COLOR_NAME_TO_RGB[dico['kbd']])
+    #
+    if 'cat' in dico:
+        for k, v in dico['cat'].items():
+            kbd.change_cat_color(k, colour.COLOR_NAME_TO_RGB[v])
+    #
+    if 'key' in dico:
+        for k, v in dico['key'].items():
+            kbd.change_key_color(k, colour.COLOR_NAME_TO_RGB[v])
+
+
+clavier = dtv2.dtv2()
+
+with open(args.filename) as fh:
+    config = fh.read()
+    dico_config = json.loads(config)
+    apply_changes(clavier, dico_config)
+
