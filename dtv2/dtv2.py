@@ -156,7 +156,6 @@ class dtv2:
             return -1
         else:
             retour = self.dev.write(self.trame)
-            self.dev.close()
             return retour
 
     def change_key_color(self, id_key, couleur_RGB):
@@ -166,7 +165,9 @@ class dtv2:
         self.__ouverture_device()
         self.__trame_couleur_touche(id_key, couleur_RGB)
         if self.__ecriture_device() == -1:
+            self.dev.close()
             raise Exception('erreur...')
+        self.dev.close()
 
     def change_cat_color(self, categorie, couleur_RGB):
         """demande l'application d'un changement sur une catégorie de
@@ -185,7 +186,9 @@ class dtv2:
             self.__ouverture_device()
             self.__trame_couleur_touche(id_key, couleur_RGB)
             if self.__ecriture_device() == -1:
+                self.dev.close()
                 raise Exception('erreur...')
+            self.dev.close()
 
     def change_kbd_color(self, couleur_RGB):
         """demande l'application d'un changement sur l'ensemble des touches
@@ -194,11 +197,17 @@ class dtv2:
         # dtv2.keys est un dict
         # dtv2.keys.keys() est un dict_keys
         # list(dtv2.keys.keys()) est une liste
+        trames = []
         for liste_cinq_touches in split_list(list(dtv2.keys.keys())):
-            self.__ouverture_device()
             self.__trame_couleur_plusieurs_touches(
                 liste_cinq_touches,
                 [couleur_RGB] * len(liste_cinq_touches)
             )
-            if self.__ecriture_device() == -1:
+            trames.append(self.trame)
+        for trame in trames:
+            self.__ouverture_device()
+            self.trame = trame
+            a = self.__ecriture_device()
+            self.dev.close()
+            if a == -1:
                 raise Exception('erreur...')
