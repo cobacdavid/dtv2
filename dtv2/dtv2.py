@@ -63,11 +63,21 @@ class dtv2:
                   '!': 0x38}
         keys.update(frkeys)
 
+    coms = {"indiv":  # https://github.com/dennisblokland/DrevoTyrfing
+            {"prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe]},
+            "mem_effect":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xd]},
+            "radar":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x10]},
+            "static":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x1]},
+            "breath":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x2]},
+            "stream":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x3]}}
+
     def __init__(self):
-        # https://github.com/dennisblokland/DrevoTyrfing
-        self.com_prefixe = [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe]
-        #
-        self.trame = []
+        self.trame = [0] * 32
         self.iface = None
         self.path = None
         self.dev = None
@@ -106,7 +116,7 @@ class dtv2:
         key = [dtv2.keys[id_key]] + [0] * 4
         couleurs = [*couleur_RGB] + [0xf]
         couleurs += [0, 0, 0, 0xff] * 4
-        trame = self.com_prefixe + key + couleurs[:-1]
+        trame = dtv2.coms["indiv"]["prefix"] + key + couleurs[:-1]
         if len(trame) == 31:
             self.trame = trame
         else:
@@ -142,7 +152,7 @@ class dtv2:
             trame += [0, 0, 0, 0x0] * nb_restant
             #
             # on enlève le dernier spacer !
-            trame = self.com_prefixe + trame[:-1]
+            trame = dtv2.coms["indiv"]["prefix"] + trame[:-1]
         if len(trame) == 31:
             self.trame = trame
         else:
@@ -158,7 +168,7 @@ class dtv2:
             retour = self.dev.write(self.trame)
             return retour
 
-    def change_key_color(self, id_key, couleur_RGB):
+    def key(self, id_key, couleur_RGB):
         """ demande l'application d'un changement sur une touche
         """
 
@@ -169,7 +179,33 @@ class dtv2:
             raise Exception('erreur...')
         self.dev.close()
 
-    def change_cat_color(self, categorie, couleur_RGB):
+    def __construction_trames(self, liste_touches, couleur_RGB):
+        """ construit toutes les trames nécessaire par groupe de 5
+        """
+
+        trames = []
+        for liste_cinq_touches in split_list(liste_touches):
+            # met à jour self.trame
+            self.__trame_couleur_plusieurs_touches(
+                liste_cinq_touches,
+                [couleur_RGB] * len(liste_cinq_touches)
+            )
+            trames.append(self.trame)
+        return trames
+
+    def __applique_trames(self, liste_trames):
+        """
+        """
+
+        for trame in liste_trames:
+            self.__ouverture_device()
+            self.trame = trame
+            a = self.__ecriture_device()
+            self.dev.close()
+            if a == -1:
+                raise Exception('erreur...')
+
+    def category(self, categorie, couleur_RGB):
         """demande l'application d'un changement sur une catégorie de
         touches
         Les catégories possibles :
@@ -182,32 +218,94 @@ class dtv2:
         """
 
         cat = self.category_keys[categorie]
-        for id_key in cat:
-            self.__ouverture_device()
-            self.__trame_couleur_touche(id_key, couleur_RGB)
-            if self.__ecriture_device() == -1:
-                self.dev.close()
-                raise Exception('erreur...')
-            self.dev.close()
+        trames = self.__construction_trames(cat, couleur_RGB)
+        self.__applique_trames(trames)
 
-    def change_kbd_color(self, couleur_RGB):
+    def kbd(self, couleur_RGB):
+        """
+        """
+
+        trames = self.__construction_trames(list(dtv2.keys.keys()),
+                                            couleur_RGB)
+        self.__applique_trames(trames)
+
+    def mem_effect(self, color1,
+                   color2=(0xff, 0, 0),
+                   brightness=100):
         """demande l'application d'un changement sur l'ensemble des touches
         """
 
         # dtv2.keys est un dict
         # dtv2.keys.keys() est un dict_keys
         # list(dtv2.keys.keys()) est une liste
-        trames = []
-        for liste_cinq_touches in split_list(list(dtv2.keys.keys())):
-            self.__trame_couleur_plusieurs_touches(
-                liste_cinq_touches,
-                [couleur_RGB] * len(liste_cinq_touches)
-            )
-            trames.append(self.trame)
-        for trame in trames:
-            self.__ouverture_device()
-            self.trame = trame
-            a = self.__ecriture_device()
-            self.dev.close()
-            if a == -1:
-                raise Exception('erreur...')
+        # trames = self.__construction_trames(list(dtv2.keys.keys()),
+        #                                     couleur_RGB)
+        self.trame[:7] = dtv2.coms["mem_effect"]["prefix"]
+        self.trame[8] = int(round(brightness / 100 * 6))
+        self.trame[12:15] = [*color1]
+        self.trame[16:19] = [*color2]
+        #
+        self.__applique_trames([self.trame])
+
+    def radar(self, color1,
+              color2=(0xff, 0, 0),
+              brightness=100,
+              speed=100,
+              direction=0):
+        """
+        """
+
+        self.trame[:7] = dtv2.coms["radar"]["prefix"]
+        self.trame[7] = int(round(speed / 100 * 9))
+        self.trame[8] = int(round(brightness / 100 * 6))
+        self.trame[9] = direction
+        self.trame[12:15] = [*color1]
+        self.trame[16:19] = [*color2]
+        #
+        self.__applique_trames([self.trame])
+
+    def static(self, color1,
+               brightness=100,
+               speed=100,
+               rainbow=False):
+        """ Couleur fixe
+        ou
+        parcours des couleurs de l'arc en ciel
+        """
+
+        self.trame[:7] = dtv2.coms["static"]["prefix"]
+        self.trame[7] = int(round(speed / 100 * 9))
+        self.trame[8] = int(round(brightness / 100 * 6))
+        self.trame[12:15] = [*color1]
+        self.trame[15] = 1 if rainbow else 0
+        #
+        self.__applique_trames([self.trame])
+
+    def breath(self, color1,
+               color2=(0xff, 0, 0),
+               brightness=100,
+               speed=100):
+
+        self.trame[:7] = dtv2.coms["breath"]["prefix"]
+        self.trame[7] = int(round(speed / 100 * 9))
+        self.trame[8] = int(round(brightness / 100 * 6))
+        self.trame[12:15] = [*color1]
+        self.trame[16:19] = [*color2]
+        #
+        self.__applique_trames([self.trame])
+
+    def stream(self, color1,
+               color2=(0xff, 0, 0),
+               brightness=100,
+               speed=100,
+               direction="e"):
+
+        directions = {'e': 0, 'w': 1, 's': 2, 'n': 3}
+        self.trame[:7] = dtv2.coms["stream"]["prefix"]
+        self.trame[7] = int(round(speed / 100 * 9))
+        self.trame[8] = int(round(brightness / 100 * 6))
+        self.trame[9] = directions[direction]
+        self.trame[12:15] = [*color1]
+        self.trame[16:19] = [*color2]
+        #
+        self.__applique_trames([self.trame])
