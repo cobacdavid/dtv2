@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name='dtv2',
-    version='0.3',
+    version='0.3.1',
     description='Some functions to handle color management on the Drevo Tyrfing V2',
     long_description_content_type='text/markdown',
     long_description=long_description,

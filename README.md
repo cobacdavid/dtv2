@@ -89,6 +89,9 @@ Color tuples can be given in decimals, of course.
 
 4. ...
 
+## License
+
+CC-BY-NC-SA
 
 ## Thanks
 
