@@ -36,7 +36,7 @@ keys = {'esc': 0x29, 'f1': 0x3a, 'f2': 0x3b, 'f3': 0x3c, 'f4': 0x3d,
 category_keys = {'letters': string.ascii_lowercase,
                  'digits': string.digits,
                  'mod': ['esc', 'lshift', 'rshift', 'lctrl',
-                         'win', 'alt', 'altgr', 'rctrl'],
+                         'win', 'lalt', 'ralt', 'rctrl'],
                  'arrows': ['left', 'right', 'down', 'up'],
                  'function': [f'f{i}' for i in range(1, 1 + 12)],
                  'edition': ['ins', 'home', 'p-up',
@@ -67,8 +67,10 @@ coms = {"mem_effect":
         {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x2]},
         "stream":
         {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x3]},
-        "indiv":  # https://github.com/dennisblokland/DrevoTyrfing
-        {"prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe]}}
+        "indiv":
+        {"avantp": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xf],
+         "prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe],
+         "apresp": [0x6, 0xbe, 0x15, 0x0, 0x2, 0x1, 0x1]}}
 
 
 def split_list(L):
@@ -168,17 +170,22 @@ class dtv2:
             trames.append(self.trame[:])
         return trames
 
-    def __applique_trames(self, liste_trames):
+    def __applique_trames(self, liste_trames, indiv=False):
         """
         """
 
-        for trame in liste_trames:
+        for i in range(len(liste_trames)):
+            trame = liste_trames[i]
             self.__ouverture_device()
             self.trame = trame
+            if indiv and i == 0:
+                self.trame[15] = 0x53
+                self.trame[31] = 0x65
             a = self.__ecriture_device()
             self.dev.close()
             if a == -1:
-                raise Exception('erreur...')
+                pass
+                #  raise Exception('erreur...')
 
     def mem_effect(self, color1,
                    color2=(0xff, 0, 0),
@@ -289,4 +296,19 @@ class dtv2:
 
         trames = self.__construction_trames(list(keys.keys()),
                                             couleur_RGB)
-        self.__applique_trames(trames)
+        #
+        trame_avant = [0x0] * 32
+        trame_avant[:7] = coms["indiv"]["avantp"]
+        trame_avant[8] = 0x6  # luminosité
+        trame_avant[12] = 0xff
+        self.__applique_trames(trame_avant)
+        #
+        self.__applique_trames(trames, indiv=True)
+        #
+        trame_apres = [0] * 32
+        trame_apres[:7] = coms["indiv"]["apresp"]
+        trame_apres[7] = 0x5
+        trame_apres[8] = 0x9
+        trame_apres[12] = 0xff
+        trame_apres[16] = 0xff
+        self.__applique_trames(trame_apres)

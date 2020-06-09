@@ -1,4 +1,15 @@
-# complete rework since 0.3
+# Some important notes
+
+This package has some issues in properly communicating with the
+device with `key`, `category` and `kbd` methods, so you have to
+expect slow changes on your keyboard and/or incomplete changes...
+
+The `pypi` version is not updated as frequently as this repo. So,
+for latest release, consider `git clone`.
+
+No example usages are provided for the moment but I work on it. You
+can use `colour` module to convert (with `colour.COLOR_NAME_TO_RGB`
+function) svg color names to hexa triplets.
 
 ## Installation
 
