@@ -174,18 +174,18 @@ class dtv2:
         """
         """
 
+        self.__ouverture_device()
         for i in range(len(liste_trames)):
             trame = liste_trames[i]
-            self.__ouverture_device()
             self.trame = trame
             if indiv and i == 0:
                 self.trame[15] = 0x53
                 self.trame[31] = 0x65
             a = self.__ecriture_device()
-            self.dev.close()
             if a == -1:
                 pass
                 #  raise Exception('erreur...')
+        self.dev.close()
 
     def mem_effect(self, color1,
                    color2=(0xff, 0, 0),
