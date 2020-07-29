@@ -238,13 +238,15 @@ class dtv2:
                color2=(0xff, 0, 0),
                brightness=100,
                speed=100,
-               direction="e"):
+               direction="e",
+               rainbow=False):
         directions = {'e': 0, 'w': 1, 's': 2, 'n': 3}
         self.__execute__command("stream", color1,
                                 color2=color2,
                                 brightness=brightness,
                                 speed=speed,
-                                direction=directions[direction])
+                                direction=directions[direction],
+                                rainbow=rainbow)
 
     def __execute__command(self, commande, color1,
                            color2=(0xff, 0, 0),
