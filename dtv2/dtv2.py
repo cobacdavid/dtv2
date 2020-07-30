@@ -96,11 +96,11 @@ class dtv2:
         interfaces = hid.enumerate(vendor_id, product_id)
         # si présent mais pas accessible (cf. /etc/udev/rules.d)
         # cette chaîne est vide
-        if interfaces[1]['product_string'] == '':
-            return False
-        else:
-            self.iface = interfaces[1]
-            return True
+        for interface in interfaces:
+            if interface['interface_number'] == 1 and interface['usage'] == 0:
+                self.iface = interface
+                return True
+        return False
 
     def __ouverture_device(self):
         """ nom explicite
