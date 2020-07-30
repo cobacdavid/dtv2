@@ -1,0 +1,11 @@
+{"kbd": "gray",
+ "cat": {"letters": "aquamarine"},
+ "key": {"PS": "black",
+         "SL": "black",
+         "PB": "black",
+         "²": "black",
+         "ins": "black",
+         "win": "red",
+         "right": "red",
+         "left": "red"}
+}

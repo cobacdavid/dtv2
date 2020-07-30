@@ -1,15 +1,14 @@
 # Some important notes
 
-This package has some issues in properly communicating with the
-device with `key`, `category` and `kbd` methods, so you have to
-expect slow changes on your keyboard and/or incomplete changes...
+Thanks to @Zer0xFF, this new release improves and speeds up
+individual key coloring.
 
 The `pypi` version is not updated as frequently as this repo. So,
 for latest release, consider `git clone`.
 
-No example usages are provided for the moment but I work on it. You
-can use `colour` module to convert (with `colour.COLOR_NAME_TO_RGB`
-function) svg color names to hexa triplets.
+An example usage is provided in the `examples` directory. It uses
+[`colour` package](https://github.com/vaab/colour) to allow human
+color names instead of hex triplets!
 
 ## Installation
 
@@ -43,7 +42,7 @@ my_kbd.static((0, 0, 0xff), brightness=100, speed=100, rainbow=False)
 # breath: breath effect
 my_kbd.breath((0, 0, 0xff), brightness=100, speed=100)
 # stream: stream effect (direction = 'n' or 's' or 'e' or 'w')
-my_kbd.stream((0, 0, 0xff), color2=(0xff, 0, 0), brightness=100, speed=100, direction='e')
+my_kbd.stream((0, 0, 0xff), color2=(0xff, 0, 0), brightness=100, speed=100, direction='e', rainbow=False)
 # category: change color of a whole category ('letters', 'digits', 'arrows', 'function', 'mod', 'edition')
 my_kbd.category('arrows', (0xff, 0, 0))
 # key: simple key color change
