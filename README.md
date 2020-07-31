@@ -4,6 +4,9 @@ This python module handles key coloring of the Drevo Tyrfing v2
 keyboard, especially for linux users ; nevertheless it should work
 under other platforms.
 
+BUT development is still in progress, the code needs testing (unit,
+assertions etc.)
+
 # Installation
 
 1. Copy the ` 99-drevo-tyrfing.rules` in the `/etc/udev/rules.d/`
@@ -43,6 +46,9 @@ my_kbd.stream((0, 0, 0xff), color2=(0xff, 0, 0), brightness=100, speed=100, dire
 # category: change color of a whole category ('letters', 'digits', 'arrows', 'function', 'mod', 'edition')
 my_kbd.category('arrows', (0xff, 0, 0))
 
+# key_set: list of keys and list of colors
+my_kbd.key_set(['esc', 'space'], [(0xff, 0, 0), (0, 0xff, 0)])
+
 # key: simple key color change
 my_kbd.key('esc', (0xff, 0, 0))
 ```
@@ -71,7 +77,8 @@ If you need a monocolor keyboard: `static` or `kbd`.
 If you want some effects: `mem_effect`, `radar`, `static` (with
 rainbow) `breath` or `stream`.
 
-If you want to personalize categories or some keys: `kbd`, `category` or `key`.
+If you want to personalize categories or some keys: `kbd`,
+`category` `key_set` and `key`.
 
 ## 
 An example usage is provided in the `examples` directory. It uses

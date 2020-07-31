@@ -320,6 +320,18 @@ device.
             raise Exception('erreur...')
         self.dev.close()
 
+    def key_set(self, id_keys, RGB_colors):
+        """Multi-keys assignments
+
+        """
+
+        trames = []
+        for keys, colors in zip(split_list(id_keys), split_list(RGB_colors)):
+            self.__trame_couleur_plusieurs_touches(keys, colors)
+            trames.append(self.trame[:])
+
+        self.__applique_trames(trames)
+
     def category(self, categorie, couleur_RGB):
         """Category keys color assignment
 

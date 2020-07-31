@@ -24,8 +24,8 @@ def apply_changes(kbd, dico):
             kbd.category(k, colour.COLOR_NAME_TO_RGB[v])
     #
     if 'key' in dico:
-        for k, v in dico['key'].items():
-            kbd.key(k, colour.COLOR_NAME_TO_RGB[v])
+        colors = [colour.COLOR_NAME_TO_RGB[v] for v in dico['key'].values()]
+        kbd.key_set(list(dico['key'].keys()), colors)
 
 
 clavier = dtv2.dtv2()
