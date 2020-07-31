@@ -1,11 +1,19 @@
+__author__ = "david cobac"
+__email__ = "david.cobac @ gmail.com"
+__twitter__ = "https://twitter.com/david_cobac"
+__github__ = "https://github.com/cobacdavid"
+__copyright__ = "Copyright 2020, CC-BY-NC-SA"
+
 import hid
 import string
 import locale
 
-#
+
+# keyboard identification
 vendor_id = 0x416
 product_id = 0xa0f8
-#
+
+# keycodes
 keys = {'esc': 0x29, 'f1': 0x3a, 'f2': 0x3b, 'f3': 0x3c, 'f4': 0x3d,
         'f5': 0x3e, 'f6': 0x3f, 'f7': 0x40, 'f8': 0x41, 'f9': 0x42,
         'f10': 0x43, 'f11': 0x44, 'f12': 0x45, 'PS': 0x46, 'SL': 0x47,
@@ -32,7 +40,8 @@ keys = {'esc': 0x29, 'f1': 0x3a, 'f2': 0x3b, 'f3': 0x3c, 'f4': 0x3d,
         'lctrl': 0xe0, 'win': 0xe3, 'lalt': 0xe2, 'space': 0x2c,
         'ralt': 0xe6, 'FN': 0xed, 'compo': 0x65, 'rctrl': 0xe4,
         'left': 0x50, 'down': 0x51, 'right': 0x4f}
-#
+
+# keys groups
 category_keys = {'letters': string.ascii_lowercase,
                  'digits': string.digits,
                  'mod': ['esc', 'lshift', 'rshift', 'lctrl',
@@ -41,7 +50,7 @@ category_keys = {'letters': string.ascii_lowercase,
                  'function': [f'f{i}' for i in range(1, 1 + 12)],
                  'edition': ['ins', 'home', 'p-up',
                              'del', 'end', 'p-down']}
-#
+# fr locale 
 if 'fr' in locale.setlocale(locale.LC_ALL, ''):
     frkeys = {'²': 0x35,
               ')': 0x2d,
@@ -57,6 +66,7 @@ if 'fr' in locale.setlocale(locale.LC_ALL, ''):
               '!': 0x38}
     keys.update(frkeys)
 
+# commands prefixes
 coms = {"mem_effect":
         {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xd]},
         "radar":
@@ -74,6 +84,12 @@ coms = {"mem_effect":
 
 
 def split_list(L):
+    """Split a list in groups of (max) 5 elements
+
+    For individual assignments, a packet sent to the device can
+    contain max 5 keys config
+
+    """
     return [L[i:i + 5] for i in range(0, len(L), 5)]
 
 
@@ -89,8 +105,10 @@ class dtv2:
         self.trame = [0] * 32
 
     def __device_accessible(self):
-        """" nom explicite
-        retourne un booléen
+        """" explicit naming
+
+        :rtype: boolean
+
         """
 
         interfaces = hid.enumerate(vendor_id, product_id)
@@ -103,7 +121,8 @@ class dtv2:
         return False
 
     def __ouverture_device(self):
-        """ nom explicite
+        """explicit naming
+
         """
 
         if self.__device_accessible():
@@ -114,7 +133,8 @@ class dtv2:
                 raise Exception("problème d'accès")
 
     def __ecriture_device(self):
-        """ envoie la trame construite au device (clavier)
+        """write packet to the device
+
         """
 
         a = self.dev.write(self.trame)
@@ -122,9 +142,11 @@ class dtv2:
         return a
 
     def __trame_couleur_touche(self, id_key, couleur_RGB):
-        """ attribue une couleur à UNE touche particulière
-        id_key: identifiant de la touche tel que sur le dictionnaire (clé)
-        couleur_RGB: couleur sous forme d'un tuple/liste (RGB) d'entiers
+        """assign a key color to a single key
+
+        id_key: key id as in 'keys' dictionary
+        couleur_RGB: color tuple (or list) (3 integers required)
+
         """
 
         self.trame[:7] = coms["indiv"]["prefix"]
@@ -132,20 +154,19 @@ class dtv2:
         self.trame[12:15] = [*couleur_RGB]
 
     def __trame_couleur_plusieurs_touches(self, id_keys, couleurs_RGB):
-        """attribue les couleurs à plusieurs touches
+        """assign color to several keys
 
-        id_keys: liste d'identifiants des touches tels que sur le
-        dictionnaire (clé)
+        id_keys: list of key ids as in 'keys' dictionary
 
-        couleurs_RGB: liste de couleurs sous forme de tuples/listes
-        (RGB) d'entiers
+        couleurs_RGB: list of color tuples (or lists) (3 integers required)
 
-        IMPORTANT : la longeur des lises doit être inférieur ou égal à 5
-        donc utilisation de split_liste AVANT
+        IMPORTANT: lists length <=5 so you eventually have to use
+        'split_liste' BEFORE
+
         """
 
         if len(id_keys) != len(couleurs_RGB):
-            return 
+            return
         else:
             hexa_keys = [keys[i] for i in id_keys]
             colors = []
@@ -153,11 +174,11 @@ class dtv2:
                 colors += [*c, 0]
             self.trame[:7] = coms["indiv"]["prefix"]
             self.trame[7:7 + len(id_keys)] = hexa_keys
-            self.trame[12:12 + 4*len(id_keys)] = colors
+            self.trame[12:12 + 4 * len(id_keys)] = colors
 
     def __construction_trames(self, liste_touches, couleur_RGB):
-        """ construit toutes les trames nécessaire par groupe de 5
-        1 seule couleur !
+        """build a list of packets to send to the device with 1 color
+
         """
 
         trames = []
@@ -171,7 +192,9 @@ class dtv2:
         return trames
 
     def __applique_trames(self, liste_trames, indiv=False):
-        """
+        """heart of the program. Apply previously built packets to the
+device.
+
         """
 
         self.__ouverture_device()
@@ -190,7 +213,8 @@ class dtv2:
     def mem_effect(self, color1,
                    color2=(0xff, 0, 0),
                    brightness=100):
-        """demande l'application d'un changement sur l'ensemble des touches
+        """Mem animation: the more you type the more second color appears
+
         """
 
         # keys est un dict
@@ -210,6 +234,10 @@ class dtv2:
               brightness=100,
               speed=100,
               direction=0):
+        """Radar like animation
+
+        """
+
         self.__execute__command("radar", color1,
                                 color2=color2,
                                 brightness=brightness,
@@ -220,6 +248,10 @@ class dtv2:
                brightness=100,
                speed=100,
                rainbow=False):
+        """Monocolor keyboard
+
+        """
+
         self.__execute__command("static", color1,
                                 brightness=brightness,
                                 speed=speed,
@@ -229,6 +261,10 @@ class dtv2:
                color2=(0xff, 0, 0),
                brightness=100,
                speed=100):
+        """Breathe like animation
+
+        """
+
         self.__execute__command("breath", color1,
                                 color2=color2,
                                 brightness=brightness,
@@ -240,6 +276,10 @@ class dtv2:
                speed=100,
                direction="e",
                rainbow=False):
+        """Stream like animation
+
+        """
+
         directions = {'e': 0, 'w': 1, 's': 2, 'n': 3}
         self.__execute__command("stream", color1,
                                 color2=color2,
@@ -254,6 +294,9 @@ class dtv2:
                            speed=100,
                            rainbow=False,
                            direction=0):
+        """Build packet for animations and ask for applying
+
+        """
 
         self.trame[:7] = coms[commande]["prefix"]
         self.trame[7] = int(round(speed / 100 * 9))
@@ -266,7 +309,8 @@ class dtv2:
         self.__applique_trames([self.trame])
 
     def key(self, id_key, couleur_RGB):
-        """ demande l'application d'un changement sur une touche
+        """Individual key color assignment
+
         """
 
         self.__ouverture_device()
@@ -277,15 +321,10 @@ class dtv2:
         self.dev.close()
 
     def category(self, categorie, couleur_RGB):
-        """demande l'application d'un changement sur une catégorie de
-        touches
-        Les catégories possibles :
-        letters
-        digits
-        mod
-        arrows
-        function
-        edition
+        """Category keys color assignment
+
+        :categorie: is a key of the 'category_keys' dictionary
+
         """
 
         cat = category_keys[categorie]
@@ -293,7 +332,16 @@ class dtv2:
         self.__applique_trames(trames)
 
     def kbd(self, couleur_RGB):
-        """
+        """Whole keyboard in a single color
+
+        Notes: using wireshark, I saw a packet sent before and
+        another sent after... so I produce the same packets.
+        Some verifications need to be done in this section.
+
+        Difference with 'static' is that it's not a
+        prestored-effect in the device. This method assigns the
+        same color to keys. It's a user config.
+
         """
 
         trames = self.__construction_trames(list(keys.keys()),
