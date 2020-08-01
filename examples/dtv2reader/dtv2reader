@@ -16,16 +16,24 @@ args = parseur_args.parse_args()
 
 
 def apply_changes(kbd, dico):
+    dico_final = {}
+    #
+    #
     if 'kbd' in dico:
-        kbd.kbd(colour.COLOR_NAME_TO_RGB[dico['kbd']])
+        for key in dtv2.keys:
+            dico_final[key] = colour.COLOR_NAME_TO_RGB[dico['kbd']]
     #
     if 'cat' in dico:
-        for k, v in dico['cat'].items():
-            kbd.category(k, colour.COLOR_NAME_TO_RGB[v])
+        for cat, v in dico['cat'].items():
+            for key in dtv2.category_keys[cat]:
+                dico_final[key] = colour.COLOR_NAME_TO_RGB[v]
     #
     if 'key' in dico:
-        colors = [colour.COLOR_NAME_TO_RGB[v] for v in dico['key'].values()]
-        kbd.key_set(list(dico['key'].keys()), colors)
+        for key, v in dico['key'].items():
+            dico_final[key] = colour.COLOR_NAME_TO_RGB[v]
+    #
+    #
+    kbd.key_set(dico_final)
 
 
 clavier = dtv2.dtv2()

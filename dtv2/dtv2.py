@@ -50,9 +50,11 @@ category_keys = {'letters': string.ascii_lowercase,
                  'function': [f'f{i}' for i in range(1, 1 + 12)],
                  'edition': ['ins', 'home', 'p-up',
                              'del', 'end', 'p-down']}
-# fr locale 
+# fr locale
 if 'fr' in locale.setlocale(locale.LC_ALL, ''):
-    frkeys = {'²': 0x35,
+    frkeys = {'a': 0x14,
+              'q': 0x04,
+              '²': 0x35,
               ')': 0x2d,
               '^': 0x2f,
               '$': 0x30,
@@ -78,9 +80,9 @@ coms = {"mem_effect":
         "stream":
         {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x3]},
         "indiv":
-        {"avantp": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xf],
+        {"beforep": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xf],
          "prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe],
-         "apresp": [0x6, 0xbe, 0x15, 0x0, 0x2, 0x1, 0x1]}}
+         "afterp": [0x6, 0xbe, 0x15, 0x0, 0x2, 0x1, 0x1]}}
 
 
 def split_list(L):
@@ -90,19 +92,20 @@ def split_list(L):
     contain max 5 keys config
 
     """
+
     return [L[i:i + 5] for i in range(0, len(L), 5)]
 
 
 class dtv2:
     #
     def __init__(self):
-        self.__init_trame()
+        self.__init_packet()
         self.iface = None
         self.path = None
         self.dev = None
 
-    def __init_trame(self):
-        self.trame = [0] * 32
+    def __init_packet(self):
+        self.packet = [0] * 32
 
     def __device_accessible(self):
         """" explicit naming
@@ -120,7 +123,7 @@ class dtv2:
                 return True
         return False
 
-    def __ouverture_device(self):
+    def __open_device(self):
         """explicit naming
 
         """
@@ -130,81 +133,81 @@ class dtv2:
             try:
                 self.dev.open_path(self.iface['path'])
             except:
-                raise Exception("problème d'accès")
+                raise Exception("Impossible to reach device")
 
-    def __ecriture_device(self):
+    def __write_device(self):
         """write packet to the device
 
         """
 
-        a = self.dev.write(self.trame)
-        self.__init_trame()
+        a = self.dev.write(self.packet)
+        self.__init_packet()
         return a
 
-    def __trame_couleur_touche(self, id_key, couleur_RGB):
+    def __packet_key_color(self, id_key, rgb_color):
         """assign a key color to a single key
 
         id_key: key id as in 'keys' dictionary
-        couleur_RGB: color tuple (or list) (3 integers required)
+        rgb_color: color tuple (or list) (3 integers required)
 
         """
 
-        self.trame[:7] = coms["indiv"]["prefix"]
-        self.trame[7] = keys[id_key]
-        self.trame[12:15] = [*couleur_RGB]
+        self.packet[:7] = coms["indiv"]["prefix"]
+        self.packet[7] = keys[id_key]
+        self.packet[12:15] = [*rgb_color]
 
-    def __trame_couleur_plusieurs_touches(self, id_keys, couleurs_RGB):
+    def __packet_keys_and_colors(self, id_keys, rgb_colors):
         """assign color to several keys
 
         id_keys: list of key ids as in 'keys' dictionary
 
-        couleurs_RGB: list of color tuples (or lists) (3 integers required)
+        rgb_colors: list of color tuples (or lists) (3 integers required)
 
         IMPORTANT: lists length <=5 so you eventually have to use
-        'split_liste' BEFORE
+        'split_list' BEFORE
 
         """
 
-        if len(id_keys) != len(couleurs_RGB):
+        if len(id_keys) != len(rgb_colors):
             return
         else:
             hexa_keys = [keys[i] for i in id_keys]
             colors = []
-            for c in couleurs_RGB:
+            for c in rgb_colors:
                 colors += [*c, 0]
-            self.trame[:7] = coms["indiv"]["prefix"]
-            self.trame[7:7 + len(id_keys)] = hexa_keys
-            self.trame[12:12 + 4 * len(id_keys)] = colors
+            self.packet[:7] = coms["indiv"]["prefix"]
+            self.packet[7:7 + len(id_keys)] = hexa_keys
+            self.packet[12:12 + 4 * len(id_keys)] = colors
 
-    def __construction_trames(self, liste_touches, couleur_RGB):
+    def __build_packets(self, keys_list, rgb_color):
         """build a list of packets to send to the device with 1 color
 
         """
 
-        trames = []
-        for liste_cinq_touches in split_list(liste_touches):
-            # met à jour self.trame
-            self.__trame_couleur_plusieurs_touches(
-                liste_cinq_touches,
-                [couleur_RGB] * len(liste_cinq_touches)
+        packets = []
+        for five_keys_list in split_list(keys_list):
+            # met à jour self.packet
+            self.__packet_keys_and_colors(
+                five_keys_list,
+                [rgb_color] * len(five_keys_list)
             )
-            trames.append(self.trame[:])
-        return trames
+            packets.append(self.packet[:])
+        return packets
 
-    def __applique_trames(self, liste_trames, indiv=False):
+    def __apply_packets(self, liste_packets, indiv=False):
         """heart of the program. Apply previously built packets to the
 device.
 
         """
 
-        self.__ouverture_device()
-        for i in range(len(liste_trames)):
-            trame = liste_trames[i]
-            self.trame = trame
+        self.__open_device()
+        for i in range(len(liste_packets)):
+            packet = liste_packets[i]
+            self.packet = packet
             if indiv and i == 0:
-                self.trame[15] = 0x53
-                self.trame[31] = 0x65
-            a = self.__ecriture_device()
+                self.packet[15] = 0x53
+                self.packet[31] = 0x65
+            a = self.__write_device()
             if a == -1:
                 pass
                 #  raise Exception('erreur...')
@@ -220,14 +223,14 @@ device.
         # keys est un dict
         # keys.keys() est un dict_keys
         # list(keys.keys()) est une liste
-        # trames = self.__construction_trames(list(keys.keys()),
-        #                                     couleur_RGB)
-        self.trame[:7] = coms["mem_effect"]["prefix"]
-        self.trame[8] = int(round(brightness / 100 * 6))
-        self.trame[12:15] = [*color1]
-        self.trame[16:19] = [*color2]
+        # packets = self.__build_packets(list(keys.keys()),
+        #                                     rgb_color)
+        self.packet[:7] = coms["mem_effect"]["prefix"]
+        self.packet[8] = int(round(brightness / 100 * 6))
+        self.packet[12:15] = [*color1]
+        self.packet[16:19] = [*color2]
         #
-        self.__applique_trames([self.trame])
+        self.__apply_packets([self.packet])
 
     def radar(self, color1,
               color2=(0xff, 0, 0),
@@ -288,7 +291,7 @@ device.
                                 direction=directions[direction],
                                 rainbow=rainbow)
 
-    def __execute__command(self, commande, color1,
+    def __execute__command(self, command, color1,
                            color2=(0xff, 0, 0),
                            brightness=100,
                            speed=100,
@@ -298,52 +301,82 @@ device.
 
         """
 
-        self.trame[:7] = coms[commande]["prefix"]
-        self.trame[7] = int(round(speed / 100 * 9))
-        self.trame[8] = int(round(brightness / 100 * 6))
-        self.trame[9] = direction
-        self.trame[12:15] = [*color1]
-        self.trame[15] = 1 if rainbow else 0
-        self.trame[16:19] = [*color2]
+        self.packet[:7] = coms[command]["prefix"]
+        self.packet[7] = int(round(speed / 100 * 9))
+        self.packet[8] = int(round(brightness / 100 * 6))
+        self.packet[9] = direction
+        self.packet[12:15] = [*color1]
+        self.packet[15] = 1 if rainbow else 0
+        self.packet[16:19] = [*color2]
         #
-        self.__applique_trames([self.trame])
+        self.__apply_packets([self.packet])
 
-    def key(self, id_key, couleur_RGB):
+    def key(self, id_key, rgb_color):
         """Individual key color assignment
 
         """
 
-        self.__ouverture_device()
-        self.__trame_couleur_touche(id_key, couleur_RGB)
-        if self.__ecriture_device() == -1:
+        self.__open_device()
+        self.__packet_key_color(id_key, rgb_color)
+        if self.__write_device() == -1:
             self.dev.close()
-            raise Exception('erreur...')
+            raise Exception('Oups error...')
         self.dev.close()
 
-    def key_set(self, id_keys, RGB_colors):
+    def __key_set(self, id_keys, rgb_colors):
         """Multi-keys assignments
 
         """
 
-        trames = []
-        for keys, colors in zip(split_list(id_keys), split_list(RGB_colors)):
-            self.__trame_couleur_plusieurs_touches(keys, colors)
-            trames.append(self.trame[:])
+        packets = []
+        for keys, colors in zip(split_list(id_keys), split_list(rgb_colors)):
+            self.__packet_keys_and_colors(keys, colors)
+            packets.append(self.packet[:])
 
-        self.__applique_trames(trames)
+        self.__apply_packets(packets)
 
-    def category(self, categorie, couleur_RGB):
-        """Category keys color assignment
+    def key_set(self, *args):
+        """Multi-keys assignments with differents entry types
 
-        :categorie: is a key of the 'category_keys' dictionary
+        Usage examples:
+        key_set( ['esc', 'space'], [(0xff, 0, 0), (0, 0xff, 0)] )
+        key_set( {'esc': (0xff, 0, 0), 'space': (0, 0xff, 0)} )
+        key_set( [('esc', (0xff, 0, 0)), ('space', (0, 0xff, 0)] )
+        key_set( (('esc', (0xff, 0, 0)), ('space', (0, 0xff, 0)) )
 
         """
 
-        cat = category_keys[categorie]
-        trames = self.__construction_trames(cat, couleur_RGB)
-        self.__applique_trames(trames)
+        if len(args) == 2:
+            id_keys, rgb_colors = args
+        elif len(args) == 1:
+            args = args[0]
+            if type(args) == dict:
+                id_keys = list(args.keys())
+                rgb_colors = list(args.values())
+            if (type(args) == list
+                # or type(args) == set
+                or type(args) == tuple):
+                id_keys, rgb_colors = [], []
+                for key, color in args:
+                    id_keys.append(key)
+                    rgb_colors.append(color)
+        else:
+            return
+        #
+        self.__key_set(id_keys, rgb_colors)
 
-    def kbd(self, couleur_RGB):
+    def category(self, category, rgb_color):
+        """Category keys color assignment
+
+        :category: is a key of the 'category_keys' dictionary
+
+        """
+
+        cat = category_keys[category]
+        packets = self.__build_packets(cat, rgb_color)
+        self.__apply_packets(packets)
+
+    def kbd(self, rgb_color):
         """Whole keyboard in a single color
 
         Notes: using wireshark, I saw a packet sent before and
@@ -356,21 +389,21 @@ device.
 
         """
 
-        trames = self.__construction_trames(list(keys.keys()),
-                                            couleur_RGB)
+        packets = self.__build_packets(list(keys.keys()),
+                                            rgb_color)
         #
-        trame_avant = [0x0] * 32
-        trame_avant[:7] = coms["indiv"]["avantp"]
-        trame_avant[8] = 0x6  # luminosité
-        trame_avant[12] = 0xff
-        self.__applique_trames(trame_avant)
+        packet_before = [0x0] * 32
+        packet_before[:7] = coms["indiv"]["beforep"]
+        packet_before[8] = 0x6  # luminosité
+        packet_before[12] = 0xff
+        self.__apply_packets(packet_before)
         #
-        self.__applique_trames(trames, indiv=True)
+        self.__apply_packets(packets, indiv=True)
         #
-        trame_apres = [0] * 32
-        trame_apres[:7] = coms["indiv"]["apresp"]
-        trame_apres[7] = 0x5
-        trame_apres[8] = 0x9
-        trame_apres[12] = 0xff
-        trame_apres[16] = 0xff
-        self.__applique_trames(trame_apres)
+        packet_after = [0] * 32
+        packet_after[:7] = coms["indiv"]["afterp"]
+        packet_after[7] = 0x5
+        packet_after[8] = 0x9
+        packet_after[12] = 0xff
+        packet_after[16] = 0xff
+        self.__apply_packets(packet_after)

@@ -47,7 +47,11 @@ my_kbd.stream((0, 0, 0xff), color2=(0xff, 0, 0), brightness=100, speed=100, dire
 my_kbd.category('arrows', (0xff, 0, 0))
 
 # key_set: list of keys and list of colors
-my_kbd.key_set(['esc', 'space'], [(0xff, 0, 0), (0, 0xff, 0)])
+my_kbd.key_set( ['esc', 'space'], [(0xff, 0, 0), (0, 0xff, 0)] )
+my_kbd.key_set( {'esc': (0xff, 0, 0), 'space': (0, 0xff, 0)} )
+my_kbd.key_set( [('esc', (0xff, 0, 0)), ('space',(0, 0xff, 0)] )
+my_kbd.key_set( (('esc', (0xff, 0, 0)), ('space',(0, 0xff, 0)) )
+
 
 # key: simple key color change
 my_kbd.key('esc', (0xff, 0, 0))
