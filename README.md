@@ -158,7 +158,7 @@ So: I used wireshark to find other command prefixes.
 
 [USB hid tables](https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf) (for missing french key codes) 
 
-Recently [Zer255](https://github.com/Zer255) proposed some
+Recently [Zer0xFF](https://github.com/Zer0xFF) proposed some
 changes making individual key color assignments really usable.
 
 # And now?
