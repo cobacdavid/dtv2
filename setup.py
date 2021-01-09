@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name='dtv2',
-    version='0.4.4',
+    version='0.4.5',
     description='Some functions to handle color management on the Drevo Tyrfing V2',
     long_description_content_type='text/markdown',
     long_description=long_description,
@@ -20,5 +20,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     license='CC-BY-NC-SA',
-    packages=find_packages()
+    packages=find_packages(),
+    install_requires=["hidapi", "colour"],
+    scripts=['bin/dtv2change', 'bin/dtv2reader']
 )

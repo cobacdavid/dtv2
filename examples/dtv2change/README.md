@@ -1,12 +1,7 @@
 # Installation
 
-Just put `dtv2change` in a path known by your `PATH` environment
-variable so that it can be executed (e.g. `$HOME/.local/bin`) and make
-it executable:
+`dtv2change` is automatically installed with `dtv2` installation.
 
-``` bash
-chmod +x dtv2change
-```
 
 # What it does
 

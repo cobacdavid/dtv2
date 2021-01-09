@@ -1,12 +1,6 @@
 # Installation
 
-Just put `dtv2reader` in a path known by your `PATH` environment
-variable so that it can be executed (e.g. `$HOME/.local/bin`) and make
-it executable:
-
-``` bash
-chmod +x dtv2reader
-```
+`dtv2reader` is automatically installed with `dtv2` installation.
 
 # What it does
 
