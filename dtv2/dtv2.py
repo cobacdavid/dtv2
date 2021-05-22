@@ -7,39 +7,27 @@ __copyright__ = "Copyright 2020, CC-BY-NC-SA"
 import hid
 import string
 import locale
+import json
+import importlib.resources
 
 
 # keyboard identification
 vendor_id = 0x416
 product_id = 0xa0f8
 
-# keycodes
-keys = {'esc': 0x29, 'f1': 0x3a, 'f2': 0x3b, 'f3': 0x3c, 'f4': 0x3d,
-        'f5': 0x3e, 'f6': 0x3f, 'f7': 0x40, 'f8': 0x41, 'f9': 0x42,
-        'f10': 0x43, 'f11': 0x44, 'f12': 0x45, 'PS': 0x46, 'SL': 0x47,
-        'PB': 0x48,
-        #
-        '~': 0x35, '1': 0x1e, '2': 0x1f, '3': 0x20, '4': 0x21,
-        '5': 0x22, '6': 0x23, '7': 0x24, '8': 0x25, '9': 0x26,
-        '0': 0x27, '-': 0x2d, '=': 0x2e, 'BACKS': 0x2a,
-        'ins': 0x49, 'home': 0x4a, 'p-up': 0x4b,
-        #
-        'tab': 0x2b, 'q': 0x14, 'w': 0x1a, 'e': 0x08, 'r': 0x15,
-        't': 0x17, 'y': 0x1c, 'u': 0x18, 'i': 0x0c, 'o': 0x12,
-        'p': 0x13, '[': 0x2f, ']': 0x30, '\\': 0x31, 'del': 0x4c,
-        'end': 0x4d, 'p-down': 0x4e,
-        #
-        'caps': 0x39, 'a': 0x04, 's': 0x16, 'd': 0x07, 'f': 0x09,
-        'g': 0x0a, 'h': 0x0b, 'j': 0x0d, 'k': 0x0e, 'l': 0x0f,
-        ';': 0x33, '\'': 0x34, 'enter': 0x28,
-        #
-        'lshift': 0xe1, 'z': 0x1d, 'x': 0x1b, 'c': 0x06, 'v': 0x19,
-        'b': 0x05, 'n': 0x11, 'm': 0x10, ',': 0x36, '.': 0x37,
-        '/': 0x38, 'rshift': 0xe5, 'up': 0x52,
-        #
-        'lctrl': 0xe0, 'win': 0xe3, 'lalt': 0xe2, 'space': 0x2c,
-        'ralt': 0xe6, 'FN': 0xed, 'compo': 0x65, 'rctrl': 0xe4,
-        'left': 0x50, 'down': 0x51, 'right': 0x4f}
+
+# locale handling
+lang = locale.setlocale(locale.LC_ALL, '')[:2]
+lang_file = f"{lang}.json"
+try:
+    lang_text = importlib.resources.read_text(__package__, lang_file)
+except FileNotFoundError:
+    lang_file = "en.json"
+    lang_text = importlib.resources.read_text(__package__, lang_file)
+keys = json.loads(lang_text)
+# str -> int
+for key in keys:
+    keys[key] = int(keys[key], 16)
 
 # keys groups
 category_keys = {'letters': string.ascii_lowercase,
@@ -50,23 +38,6 @@ category_keys = {'letters': string.ascii_lowercase,
                  'function': [f'f{i}' for i in range(1, 1 + 12)],
                  'edition': ['ins', 'home', 'p-up',
                              'del', 'end', 'p-down']}
-# fr locale
-if 'fr' in locale.setlocale(locale.LC_ALL, ''):
-    frkeys = {'a': 0x14,
-              'q': 0x04,
-              '²': 0x35,
-              ')': 0x2d,
-              '^': 0x2f,
-              '$': 0x30,
-              'm': 0x33,
-              'ù': 0x34,
-              '*': 0x32,
-              '<': 0x64,
-              ',': 0x10,
-              ';': 0x36,
-              ':': 0x37,
-              '!': 0x38}
-    keys.update(frkeys)
 
 # commands prefixes
 coms = {"mem_effect":
