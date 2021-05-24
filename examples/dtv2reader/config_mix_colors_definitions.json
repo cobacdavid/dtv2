@@ -1,0 +1,10 @@
+{
+    "kbd": "white",
+    "cat": {
+        "row K": "#00f",
+        "row A": "rgb=(0, 0, 1)"
+    },
+    "key": {
+        "enter": "hsl=(1, 1, .5)"
+    }
+}

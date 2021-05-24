@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 __author__ = "david cobac"
-__email__ = "david.cobac@gmail.com"
+__email__ = "david.cobac @ gmail.com"
 __year__ = 2020
+__last_modified__ = 2021
 
 import argparse
 import dtv2
 import colour
 import json
+import ast
+import re
 
 
 parseur_args = argparse.ArgumentParser(
@@ -15,22 +18,47 @@ parseur_args.add_argument('filename', help='config_file_name (json)')
 args = parseur_args.parse_args()
 
 
+def user_entry_to_color_tuple(user_color):
+    """ return a RGB int tuple so it can be used
+    with dtv2
+
+    user_color: str object 
+    """
+
+    # searching for rgb or hsl color writing
+    reg = re.compile("(.+)=(.+)")
+    mat = reg.match(user_color)
+    if mat is not None:
+        mode = mat.group(1).strip()
+        color_tuple = mat.group(2).strip()
+        color_tuple = ast.literal_eval(color_tuple)
+        if mode == "rgb":
+            u_color = colour.Color(rgb=color_tuple)
+        elif mode == "hsl":
+            u_color = colour.Color(hsl=color_tuple)
+        else:
+            print(f"Unknown {user_colour}")
+            exit()
+    else:
+        u_color = colour.Color(user_color)
+    return tuple(round(255 * c) for c in u_color.rgb)
+
+
 def apply_changes(kbd, dico):
     dico_final = {}
     #
-    #
     if 'kbd' in dico:
         for key in dtv2.keys:
-            dico_final[key] = colour.COLOR_NAME_TO_RGB[dico['kbd']]
+            dico_final[key] = user_entry_to_color_tuple(dico['kbd'])
     #
     if 'cat' in dico:
         for cat, v in dico['cat'].items():
             for key in dtv2.category_keys[cat]:
-                dico_final[key] = colour.COLOR_NAME_TO_RGB[v]
+                dico_final[key] = user_entry_to_color_tuple(v)
     #
     if 'key' in dico:
         for key, v in dico['key'].items():
-            dico_final[key] = colour.COLOR_NAME_TO_RGB[v]
+            dico_final[key] = user_entry_to_color_tuple(v)
     #
     #
     kbd.key_set(dico_final)
