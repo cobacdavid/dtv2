@@ -362,13 +362,19 @@ try:
 except FileNotFoundError:
     lang_file = "en.json"
     lang_text = importlib.resources.read_text(__package__, lang_file)
-keys = json.loads(lang_text)
-# str -> int
-for key in keys:
-    keys[key] = int(keys[key], 16)
+json_keys = json.loads(lang_text)
+# parse lang_file row (of keyboard) by row 
+# and convert values: str -> int
+category_keys = {}
+keys = {}
+for row in json_keys:
+    category_keys[row] = []
+    for key in json_keys[row]:
+        keys[key] = int(json_keys[row][key], 16)
+        category_keys[row].append(key)
 
 # keys groups
-category_keys = {
+category_keys.update({
     # common letters
     'letters': string.ascii_lowercase,
     # digits
@@ -395,10 +401,11 @@ category_keys = {
      get_key_locale_name(0x36, keys), get_key_locale_name(0x37, keys),
      get_key_locale_name(0x38, keys),
      'space', 'FN', 'compo']
-}
+})
 # not a deepcopy: control and edition point to the same list
 category_keys['control'] = category_keys['edition']
-
+# backward compatibility
+category_keys['arrows'] = category_keys['arrow']
 
 # commands prefixes
 coms = {"mem_effect":
