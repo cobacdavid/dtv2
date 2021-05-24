@@ -37,7 +37,7 @@ def user_entry_to_color_tuple(user_color):
         elif mode == "hsl":
             u_color = colour.Color(hsl=color_tuple)
         else:
-            print(f"Unknown {user_colour}")
+            print(f"Unknown {user_color}")
             exit()
     else:
         u_color = colour.Color(user_color)
