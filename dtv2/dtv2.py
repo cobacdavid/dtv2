@@ -1,8 +1,9 @@
 __author__ = "david cobac"
+__contributors_page__ = "https://github.com/cobacdavid/dtv2/graphs/contributors"
 __email__ = "david.cobac @ gmail.com"
 __twitter__ = "https://twitter.com/david_cobac"
 __github__ = "https://github.com/cobacdavid"
-__copyright__ = "Copyright 2020, CC-BY-NC-SA"
+__copyright__ = "Copyright 2020-2021, CC-BY-NC-SA"
 
 import hid
 import string
@@ -16,46 +17,6 @@ vendor_id = 0x416
 product_id = 0xa0f8
 
 
-# locale handling
-lang = locale.setlocale(locale.LC_ALL, '')[:2]
-lang_file = f"{lang}.json"
-try:
-    lang_text = importlib.resources.read_text(__package__, lang_file)
-except FileNotFoundError:
-    lang_file = "en.json"
-    lang_text = importlib.resources.read_text(__package__, lang_file)
-keys = json.loads(lang_text)
-# str -> int
-for key in keys:
-    keys[key] = int(keys[key], 16)
-
-# keys groups
-category_keys = {'letters': string.ascii_lowercase,
-                 'digits': string.digits,
-                 'mod': ['esc', 'lshift', 'rshift', 'lctrl',
-                         'win', 'lalt', 'ralt', 'rctrl'],
-                 'arrows': ['left', 'right', 'down', 'up'],
-                 'function': [f'f{i}' for i in range(1, 1 + 12)],
-                 'edition': ['ins', 'home', 'p-up',
-                             'del', 'end', 'p-down']}
-
-# commands prefixes
-coms = {"mem_effect":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xd]},
-        "radar":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x10]},
-        "static":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x1]},
-        "breath":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x2]},
-        "stream":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x3]},
-        "indiv":
-        {"beforep": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xf],
-         "prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe],
-         "afterp": [0x6, 0xbe, 0x15, 0x0, 0x2, 0x1, 0x1]}}
-
-
 def split_list(L):
     """Split a list in groups of (max) 5 elements
 
@@ -65,6 +26,18 @@ def split_list(L):
     """
 
     return [L[i:i + 5] for i in range(0, len(L), 5)]
+
+
+def get_key_locale_name(hid_id, keys_dict):
+    """ returns dictionary key form its value
+
+    hid_id: integer representing hid id of a key
+    keys_dict: a flat dictionary of locale identified keys
+    """
+
+    for name, id_code in keys_dict.items():
+        if id_code == hid_id:
+            return name
 
 
 class dtv2:
@@ -378,3 +351,67 @@ device.
         packet_after[12] = 0xff
         packet_after[16] = 0xff
         self.__apply_packets(packet_after)
+
+# main part
+#
+# locale handling
+lang = locale.setlocale(locale.LC_ALL, '')[:2]
+lang_file = f"{lang}.json"
+try:
+    lang_text = importlib.resources.read_text(__package__, lang_file)
+except FileNotFoundError:
+    lang_file = "en.json"
+    lang_text = importlib.resources.read_text(__package__, lang_file)
+keys = json.loads(lang_text)
+# str -> int
+for key in keys:
+    keys[key] = int(keys[key], 16)
+
+# keys groups
+category_keys = {
+    # common letters
+    'letters': string.ascii_lowercase,
+    # digits
+    'digits': string.digits,
+    # mod keys
+    'mod': ['esc', 'lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl'],
+    # arrow pad
+    'arrow': ['left', 'right', 'down', 'up'],
+    # function aka row K
+    'function': ['esc'] + [f'f{i}' for i in range(1, 1 + 12)] +\
+    ['PS', 'SL', 'PB'],
+    # edition keys aka control
+    'edition': ['ins', 'home', 'p-up', 'del', 'end', 'p-down'],
+    # alphanumeric: main part of the keyboard
+    'alphanumeric': list(string.ascii_lowercase) + list(string.digits) +\
+    ['lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl'] +\
+    # and now row by row:
+    [get_key_locale_name(0x35, keys), get_key_locale_name(0x2d, keys),
+     get_key_locale_name(0x2e, keys), 'BACKS',
+     'tab', get_key_locale_name(0x2f, keys), get_key_locale_name(0x30, keys),
+     'caps', get_key_locale_name(0x34, keys), get_key_locale_name(0x32, keys),
+     'enter',
+     get_key_locale_name(0x64, keys), get_key_locale_name(0x10, keys),
+     get_key_locale_name(0x36, keys), get_key_locale_name(0x37, keys),
+     get_key_locale_name(0x38, keys),
+     'space', 'FN', 'compo']
+}
+# not a deepcopy: control and edition point to the same list
+category_keys['control'] = category_keys['edition']
+
+
+# commands prefixes
+coms = {"mem_effect":
+        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xd]},
+        "radar":
+        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x10]},
+        "static":
+        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x1]},
+        "breath":
+        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x2]},
+        "stream":
+        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x3]},
+        "indiv":
+        {"beforep": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xf],
+         "prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe],
+         "afterp": [0x6, 0xbe, 0x15, 0x0, 0x2, 0x1, 0x1]}}
