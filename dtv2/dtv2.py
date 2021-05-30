@@ -41,12 +41,108 @@ def get_key_locale_name(hid_id, keys_dict):
 
 
 class dtv2:
+    # commands prefixes
+    coms = {"mem_effect":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xd]},
+            "radar":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x10]},
+            "static":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x1]},
+            "breath":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x2]},
+            "stream":
+            {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x3]},
+            "indiv":
+            {"beforep": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xf],
+             "prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe],
+             "afterp": [0x6, 0xbe, 0x15, 0x0, 0x2, 0x1, 0x1]}
+            }
     #
-    def __init__(self):
+    def __init__(self, lcl=None):
         self.__init_packet()
         self.iface = None
         self.path = None
         self.dev = None
+        self._keys = {}
+        self._category_keys = {}
+        if lcl is None:
+            lcl = locale.setlocale(locale.LC_ALL, '')[:2]
+        self._local = lcl
+        self.__assign_keys()
+
+    def __assign_keys(self):
+        lang_file = f"{self._local}.json"
+        try:
+            lang_text = importlib.resources.read_text(__package__, lang_file)
+        except FileNotFoundError:
+            print(f"{self._local}.json not found.\nLoading en.json")
+            lang_file = "en.json"
+            lang_text = importlib.resources.read_text(__package__, lang_file)
+        #
+        json_keys = json.loads(lang_text)
+            # parse lang_file row (of keyboard) by row 
+            # and convert values: str -> int
+        self._category_keys = {}
+        self._keys = {}
+        for row in json_keys:
+            self._category_keys[row] = []
+            for key in json_keys[row]:
+                self._keys[key] = int(json_keys[row][key], 16)
+                self._category_keys[row].append(key)
+
+        # keys groups
+        self._category_keys.update({
+            # common letters
+            'letters': string.ascii_lowercase,
+            # digits
+            'digits': string.digits,
+            # mod keys
+            'mod': ['esc', 'lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl'],
+            # arrow pad
+            'arrow': ['left', 'right', 'down', 'up'],
+            # function aka row K
+            'function': ['esc'] + [f'f{i}' for i in range(1, 1 + 12)] +\
+            ['PS', 'SL', 'PB'],
+            # edition keys aka control
+            'edition': ['ins', 'home', 'p-up', 'del', 'end', 'p-down'],
+            # alphanumeric: main part of the keyboard
+            'alphanumeric': list(string.ascii_lowercase) + list(string.digits) +\
+            ['lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl'] +\
+            # and now row by row:
+            [get_key_locale_name(0x35, self._keys), get_key_locale_name(0x2d, self._keys),
+             get_key_locale_name(0x2e, self._keys), 'BACKS',
+             'tab', get_key_locale_name(0x2f, self._keys), get_key_locale_name(0x30, self._keys),
+             'caps', get_key_locale_name(0x34, self._keys), get_key_locale_name(0x32, self._keys),
+             'enter',
+             get_key_locale_name(0x64, self._keys), get_key_locale_name(0x10, self._keys),
+             get_key_locale_name(0x36, self._keys), get_key_locale_name(0x37, self._keys),
+             get_key_locale_name(0x38, self._keys),
+             'space', 'FN', 'compo']
+        })
+        # not a deepcopy: control and edition point to the same list
+        self._category_keys['control'] = self._category_keys['edition']
+        # backward compatibility
+        self._category_keys['arrows'] = self._category_keys['arrow']
+
+    @property
+    def local(self):
+        """ getter for localisation string
+
+        """
+        
+        return self._local
+
+    @local.setter
+    def local(self, lcl=None):
+        """ setter for localisation string
+
+        """
+        
+        if lcl is None:
+            self._local = locale.setlocale(locale.LC_ALL, '')[:2]
+        else:
+            self._local = lcl
+        self.__assign_keys()
 
     def __init_packet(self):
         self.packet = [0] * 32
@@ -96,8 +192,8 @@ class dtv2:
 
         """
 
-        self.packet[:7] = coms["indiv"]["prefix"]
-        self.packet[7] = keys[id_key]
+        self.packet[:7] = dtv2.coms["indiv"]["prefix"]
+        self.packet[7] = self._keys[id_key]
         self.packet[12:15] = [*rgb_color]
 
     def __packet_keys_and_colors(self, id_keys, rgb_colors):
@@ -115,13 +211,13 @@ class dtv2:
         if len(id_keys) != len(rgb_colors):
             return
         else:
-            hexa_keys = [keys[i] for i in id_keys]
+            hexa_keys = [self._keys[i] for i in id_keys]
             colors = []
             for c in rgb_colors:
                 colors += [*c, 0]
-            self.packet[:7] = coms["indiv"]["prefix"]
-            self.packet[7:7 + len(id_keys)] = hexa_keys
-            self.packet[12:12 + 4 * len(id_keys)] = colors
+                self.packet[:7] = dtv2.coms["indiv"]["prefix"]
+                self.packet[7:7 + len(id_keys)] = hexa_keys
+                self.packet[12:12 + 4 * len(id_keys)] = colors
 
     def __build_packets(self, keys_list, rgb_color):
         """build a list of packets to send to the device with 1 color
@@ -140,7 +236,7 @@ class dtv2:
 
     def __apply_packets(self, liste_packets, indiv=False):
         """heart of the program. Apply previously built packets to the
-device.
+        device.
 
         """
 
@@ -154,7 +250,7 @@ device.
             a = self.__write_device()
             if a == -1:
                 pass
-                #  raise Exception('erreur...')
+                # raise Exception('erreur...')
         self.dev.close()
 
     def mem_effect(self, color1,
@@ -169,7 +265,7 @@ device.
         # list(keys.keys()) est une liste
         # packets = self.__build_packets(list(keys.keys()),
         #                                     rgb_color)
-        self.packet[:7] = coms["mem_effect"]["prefix"]
+        self.packet[:7] = dtv2.coms["mem_effect"]["prefix"]
         self.packet[8] = int(round(brightness / 100 * 6))
         self.packet[12:15] = [*color1]
         self.packet[16:19] = [*color2]
@@ -245,7 +341,7 @@ device.
 
         """
 
-        self.packet[:7] = coms[command]["prefix"]
+        self.packet[:7] = dtv2.coms[command]["prefix"]
         self.packet[7] = int(round(speed / 100 * 9))
         self.packet[8] = int(round(brightness / 100 * 6))
         self.packet[9] = direction
@@ -316,7 +412,7 @@ device.
 
         """
 
-        cat = category_keys[category]
+        cat = self._category_keys[category]
         packets = self.__build_packets(cat, rgb_color)
         self.__apply_packets(packets)
 
@@ -333,11 +429,11 @@ device.
 
         """
 
-        packets = self.__build_packets(list(keys.keys()),
-                                            rgb_color)
+        packets = self.__build_packets(list(self._keys.keys()),
+                                       rgb_color)
         #
         packet_before = [0x0] * 32
-        packet_before[:7] = coms["indiv"]["beforep"]
+        packet_before[:7] = dtv2.coms["indiv"]["beforep"]
         packet_before[8] = 0x6  # luminosité
         packet_before[12] = 0xff
         self.__apply_packets(packet_before)
@@ -345,80 +441,9 @@ device.
         self.__apply_packets(packets, indiv=True)
         #
         packet_after = [0] * 32
-        packet_after[:7] = coms["indiv"]["afterp"]
+        packet_after[:7] = dtv2.coms["indiv"]["afterp"]
         packet_after[7] = 0x5
         packet_after[8] = 0x9
         packet_after[12] = 0xff
         packet_after[16] = 0xff
         self.__apply_packets(packet_after)
-
-# main part
-#
-# locale handling
-lang = locale.setlocale(locale.LC_ALL, '')[:2]
-lang_file = f"{lang}.json"
-try:
-    lang_text = importlib.resources.read_text(__package__, lang_file)
-except FileNotFoundError:
-    lang_file = "en.json"
-    lang_text = importlib.resources.read_text(__package__, lang_file)
-json_keys = json.loads(lang_text)
-# parse lang_file row (of keyboard) by row 
-# and convert values: str -> int
-category_keys = {}
-keys = {}
-for row in json_keys:
-    category_keys[row] = []
-    for key in json_keys[row]:
-        keys[key] = int(json_keys[row][key], 16)
-        category_keys[row].append(key)
-
-# keys groups
-category_keys.update({
-    # common letters
-    'letters': string.ascii_lowercase,
-    # digits
-    'digits': string.digits,
-    # mod keys
-    'mod': ['esc', 'lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl'],
-    # arrow pad
-    'arrow': ['left', 'right', 'down', 'up'],
-    # function aka row K
-    'function': ['esc'] + [f'f{i}' for i in range(1, 1 + 12)] +\
-    ['PS', 'SL', 'PB'],
-    # edition keys aka control
-    'edition': ['ins', 'home', 'p-up', 'del', 'end', 'p-down'],
-    # alphanumeric: main part of the keyboard
-    'alphanumeric': list(string.ascii_lowercase) + list(string.digits) +\
-    ['lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl'] +\
-    # and now row by row:
-    [get_key_locale_name(0x35, keys), get_key_locale_name(0x2d, keys),
-     get_key_locale_name(0x2e, keys), 'BACKS',
-     'tab', get_key_locale_name(0x2f, keys), get_key_locale_name(0x30, keys),
-     'caps', get_key_locale_name(0x34, keys), get_key_locale_name(0x32, keys),
-     'enter',
-     get_key_locale_name(0x64, keys), get_key_locale_name(0x10, keys),
-     get_key_locale_name(0x36, keys), get_key_locale_name(0x37, keys),
-     get_key_locale_name(0x38, keys),
-     'space', 'FN', 'compo']
-})
-# not a deepcopy: control and edition point to the same list
-category_keys['control'] = category_keys['edition']
-# backward compatibility
-category_keys['arrows'] = category_keys['arrow']
-
-# commands prefixes
-coms = {"mem_effect":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xd]},
-        "radar":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x10]},
-        "static":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x1]},
-        "breath":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x2]},
-        "stream":
-        {"prefix": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0x3]},
-        "indiv":
-        {"beforep": [0x6, 0xbe, 0x15, 0x0, 0x1, 0x1, 0xf],
-         "prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe],
-         "afterp": [0x6, 0xbe, 0x15, 0x0, 0x2, 0x1, 0x1]}}

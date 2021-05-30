@@ -2,7 +2,7 @@
 __author__ = "david cobac"
 __email__ = "david.cobac @ gmail.com"
 __year__ = 2020
-__last_modified__ = 2021
+__last_modified__ = 20210524
 
 import argparse
 import dtv2
@@ -15,6 +15,9 @@ import re
 parseur_args = argparse.ArgumentParser(
     description="""Change Drevo tyrfing keys colors""")
 parseur_args.add_argument('filename', help='config_file_name (json)')
+parseur_args.add_argument('-V', '--version',
+                          action="store_true",
+                          help='display version (last modif. date)')
 args = parseur_args.parse_args()
 
 
@@ -48,12 +51,12 @@ def apply_changes(kbd, dico):
     dico_final = {}
     #
     if 'kbd' in dico:
-        for key in dtv2.keys:
+        for key in kbd._keys:
             dico_final[key] = user_entry_to_color_tuple(dico['kbd'])
     #
     if 'cat' in dico:
         for cat, v in dico['cat'].items():
-            for key in dtv2.category_keys[cat]:
+            for key in kbd._category_keys[cat]:
                 dico_final[key] = user_entry_to_color_tuple(v)
     #
     if 'key' in dico:
@@ -63,6 +66,9 @@ def apply_changes(kbd, dico):
     #
     kbd.key_set(dico_final)
 
+
+if args.version:
+    print(f"dtv2reader version {__last_modified__}")
 
 clavier = dtv2.dtv2()
 
