@@ -34,7 +34,11 @@
         "BACKS": "0x2a",
         "ins": "0x49",
         "home": "0x4a",
-        "p-up": "0x4b"    
+        "p-up": "0x4b",
+        "kpnlk": "0x53",
+        "kpdiv": "0x54",
+        "kpmul": "0x55",
+        "kpsub": "0x56"
     },
     "row D": {
         "tab": "0x2b",
@@ -50,9 +54,13 @@
         "p": "0x13",
         "^": "0x2f",
         "$": "0x30",
+        "enter": "0x28",
         "del": "0x4c",
         "end": "0x4d",
-        "p-down": "0x4e"
+        "p-down": "0x4e",
+        "kp7": "0x5f",
+        "kp8": "0x60",
+        "kp9": "0x61"
     },
     "row C": {
         "caps": "0x39",
@@ -68,7 +76,10 @@
         "m": "0x33",
         "ù": "0x34",
         "*": "0x32",
-        "enter": "0x28"
+        "kp4": "0x5c",
+        "kp5": "0x5d",
+        "kp6": "0x5e",
+        "kpadd": "0x57"
     },
     "row B": {
         "lshift": "0xe1",
@@ -84,7 +95,10 @@
         ":": "0x37",
         "!": "0x38",
         "rshift": "0xe5",
-        "up": "0x52"
+        "up": "0x52",
+        "kp1": "0x59",
+        "kp2": "0x5a",
+        "kp3": "0x5b"
     },
     "row A": {
         "lctrl": "0xe0",
@@ -97,6 +111,9 @@
         "rctrl": "0xe4",
         "left": "0x50",
         "down": "0x51",
-        "right": "0x4f"
+        "right": "0x4f",
+        "kp0": "0x62",
+        "kpdot": "0x63",
+        "kpent": "0x58"
     }
 }
