@@ -213,6 +213,8 @@ class dtv2:
         else:
             hexa_keys = [self._keys[i] for i in id_keys]
             colors = []
+            self.__init_packet()
+            #
             for c in rgb_colors:
                 colors += [*c, 0]
                 self.packet[:7] = dtv2.coms["indiv"]["prefix"]
