@@ -36,22 +36,25 @@ Live change and eventually store.
 
 
 ``` bash
-$ dtv2change -h
-usage: dtv2change [-h] [-r] [-n] [-chg] [-kbd KEYBOARD] [-cat CATEGORY [CATEGORY ...]] [-key KEY [KEY ...]]
+
+$ dtv2change -h                                                           
+usage: dtv2change [-h] [-V] [-r] [-n] [-chg] [-kbd KEYBOARD] [-cat CATEGORY [CATEGORY ...]] [-key KEY [KEY ...]]
 
 Change Drevo tyrfing keys colors
 
 optional arguments:
   -h, --help            show this help message and exit
+  -V, --version         display version (last modif. date)
   -r, --read            read and apply saved config
   -n, --new             replace or create config file
   -chg, --change        change config with args and store changes
   -kbd KEYBOARD, --keyboard KEYBOARD
-                        svg_color_name
+                        svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)
   -cat CATEGORY [CATEGORY ...], --category CATEGORY [CATEGORY ...]
-                        category_name svg_color_name
+                        category_name svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)
   -key KEY [KEY ...], --key KEY [KEY ...]
-                        key_name svg_color_name
+                        key_name svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)
+
 
 ```
 
@@ -60,16 +63,19 @@ optional arguments:
 Read config JSON files and apply changes.
 
 ``` bash
+
 $ dtv2reader -h
-usage: dtv2reader [-h] filename
+usage: dtv2reader [-h] [-V] filename
 
 Change Drevo tyrfing keys colors
 
 positional arguments:
-  filename    config_file_name (json)
+  filename       config_file_name (json)
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help     show this help message and exit
+  -V, --version  display version (last modif. date)
+  
 ```
 
 ## As a module
@@ -158,8 +164,12 @@ So: I used wireshark to find other command prefixes.
 
 [USB hid tables](https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf) (for missing french key codes) 
 
-Recently [Zer0xFF](https://github.com/Zer0xFF) proposed some
-changes making individual key color assignments really usable.
+[Zer0xFF](https://github.com/Zer0xFF) proposed some changes making
+individual key color assignments really usable.
+
+[onekk](https://github.com/onekk) added 104-keys keyboard
+compatibility, support of `it`alian version and other useful things
+on key categories.
 
 # And now?
 

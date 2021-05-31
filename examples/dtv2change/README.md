@@ -24,8 +24,8 @@ To change -without saving- whole keyboard: `$ dtv2change -kbd red`
 
 To change -without saving- a category: `$ dtv2change -cat letters yellow`
 
-Possible categories are `letters`, `digits`, `mod`, `arrows`,
-`function` and `edition`.
+Possible categories are `letters`, `digits`, `mod`, `arrow`,
+`function`, `edition` and `alphanumeric`.
 
 To change -without saving- a key: `$ dtv2change -key space blue`
 
@@ -62,6 +62,5 @@ script has been developed to take advantage of these functionnalities.
 
 # Colors
 
-Color names are SVG ones. Made available thanks to [`colour`
-package](https://github.com/vaab/colour)
+Color are given with their SVG names (e.g. `blue`) or hex3 version if possible (e.g. `#f00`) or hex6 version (e.g. `#ff0000`) or with floats in [0;1[ either in rgb (e.g. `rgb=(1,0,0)`) or with hsl(e.g. `hsl=(.94,1,.5)`) . Made available thanks to [`colour` package](https://github.com/vaab/colour)
 

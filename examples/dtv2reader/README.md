@@ -31,7 +31,7 @@ Key' dictionary may be `kbd` (whole keyboeard), `cat` (category) or
 `key` (individual key).
 
 `cat` is a dictionary, possible keys are `letters`, `digits`,
-`mod`, `arrows`, `function` and `edition`.
+`mod`, `arrow`, `function`, `edition` and `alphanumeric`.
 
 `key` is a dicitonary, possible keys are key names.
 
@@ -43,5 +43,4 @@ $ dtv2reader /path/to/your/config/file.json
 
 # Colors
 
-Color names are SVG ones. Made available thanks to [`colour` package](https://github.com/vaab/colour)
-
+Color are given with their SVG names (e.g. `blue`) or hex3 version if possible (e.g. `#f00`) or hex6 version (e.g. `#ff0000`) or with floats in [0;1[ either in rgb (e.g. `rgb=(1,0,0)`) or with hsl(e.g. `hsl=(.94,1,.5)`) . Made available thanks to [`colour` package](https://github.com/vaab/colour)
