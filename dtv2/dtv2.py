@@ -173,10 +173,11 @@ class dtv2:
             try:
                 self.dev.open_path(self.iface['path'])
             except:
-                raise Exception("Impossible to reach device")
+                raise Exception("Impossible to reach device... unplug and plug your keyboard.")
 
     def __write_device(self):
         """write packet to the device
+        reset packet container
 
         """
 
@@ -236,24 +237,12 @@ class dtv2:
             packets.append(self.packet[:])
         return packets
 
-
-    def __apply_unique_packet(self, packet):
-        """Send a unique packet to device
-
-        """
-
-        self.__open_device()
-        a = self.dev.write(packet)
-        self.dev.close()
-        return a
-
     def __apply_packets(self, liste_packets, indiv=False):
         """heart of the program. Apply previously built packets to the
         device.
 
         """
 
-        self.__open_device()
         for i in range(len(liste_packets)):
             packet = liste_packets[i]
             self.packet = packet
@@ -264,7 +253,6 @@ class dtv2:
             if a == -1:
                 pass
                 # raise Exception('erreur...')
-        self.dev.close()
 
     def mem_effect(self, color1,
                    color2=(0xff, 0, 0),
@@ -283,7 +271,9 @@ class dtv2:
         self.packet[12:15] = [*color1]
         self.packet[16:19] = [*color2]
         #
+        self.__open_device()
         self.__apply_packets([self.packet])
+        self.dev.close()
 
     def radar(self, color1,
               color2=(0xff, 0, 0),
@@ -362,7 +352,9 @@ class dtv2:
         self.packet[15] = 1 if rainbow else 0
         self.packet[16:19] = [*color2]
         #
+        self.__open_device()
         self.__apply_packets([self.packet])
+        self.dev.close()
 
     def key(self, id_key, rgb_color):
         """Individual key color assignment
@@ -385,8 +377,10 @@ class dtv2:
         for keys, colors in zip(split_list(id_keys), split_list(rgb_colors)):
             self.__packet_keys_and_colors(keys, colors)
             packets.append(self.packet[:])
-
+        #
+        self.__open_device()
         self.__apply_packets(packets)
+        self.dev.close()
 
     def key_set(self, *args):
         """Multi-keys assignments with differents entry types
@@ -427,7 +421,10 @@ class dtv2:
 
         cat = self._category_keys[category]
         packets = self.__build_packets(cat, rgb_color)
+        #
+        self.__open_device()
         self.__apply_packets(packets)
+        self.dev.close()
 
     def kbd(self, rgb_color):
         """Whole keyboard in a single color
@@ -445,18 +442,22 @@ class dtv2:
         packets = self.__build_packets(list(self._keys.keys()),
                                        rgb_color)
         #
-        packet_before = [0x0] * 32
-        packet_before[:7] = dtv2.coms["indiv"]["beforep"]
-        packet_before[8] = 0x6  # luminosité
-        packet_before[12] = 0xff
-        self.__apply_unique_packet(packet_before)
+        self.__open_device()
+        #
+        self.__init_packet()
+        self.packet[:7] = dtv2.coms["indiv"]["beforep"]
+        self.packet[8] = 0x6  # luminosité
+        self.packet[12] = 0xff
+        self.__write_device()
         #
         self.__apply_packets(packets, indiv=True)
         #
-        packet_after = [0] * 32
-        packet_after[:7] = dtv2.coms["indiv"]["afterp"]
-        packet_after[7] = 0x5
-        packet_after[8] = 0x9
-        packet_after[12] = 0xff
-        packet_after[16] = 0xff
-        self.__apply_unique_packet(packet_after)
+        self.__init_packet()
+        self.packet[:7] = dtv2.coms["indiv"]["afterp"]
+        self.packet[7] = 0x5
+        self.packet[8] = 0x9
+        self.packet[12] = 0xff
+        self.packet[16] = 0xff
+        self.__write_device()
+        #
+        self.dev.close()
