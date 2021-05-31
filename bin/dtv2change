@@ -2,7 +2,7 @@
 __author__ = "david cobac"
 __email__ = "david.cobac@gmail.com"
 __year__ = 2020
-__last_modified__ = 20210524
+__last_modified__ = 20210531
 
 import argparse
 import dtv2
@@ -10,6 +10,7 @@ import colour
 import json
 import os
 import re
+import ast
 
 
 home = os.environ['HOME']
@@ -29,13 +30,13 @@ parseur_args.add_argument('-chg', '--change',
                           action="store_true",
                           help='change config with args and store changes')
 parseur_args.add_argument('-kbd', '--keyboard',
-                          help='svg_color_name')
+                          help='svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)')
 parseur_args.add_argument('-cat', '--category',
                           nargs='+',
-                          help='category_name svg_color_name')
+                          help='category_name svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)')
 parseur_args.add_argument('-key', '--key',
                           nargs='+',
-                          help='key_name svg_color_name')
+                          help='key_name svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)')
 args = parseur_args.parse_args()
 
 
