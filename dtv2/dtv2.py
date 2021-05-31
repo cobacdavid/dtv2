@@ -29,7 +29,7 @@ def split_list(L):
 
 
 def get_key_locale_name(hid_id, keys_dict):
-    """ returns dictionary key form its value
+    """ returns dictionary key from its value
 
     hid_id: integer representing hid id of a key
     keys_dict: a flat dictionary of locale identified keys
@@ -234,6 +234,17 @@ class dtv2:
             packets.append(self.packet[:])
         return packets
 
+
+    def __apply_unique_packet(self, packet):
+        """Send a unique packet to device
+
+        """
+
+        self.__open_device()
+        a = self.dev.write(packet)
+        self.dev.close()
+        return a
+
     def __apply_packets(self, liste_packets, indiv=False):
         """heart of the program. Apply previously built packets to the
         device.
@@ -436,7 +447,7 @@ class dtv2:
         packet_before[:7] = dtv2.coms["indiv"]["beforep"]
         packet_before[8] = 0x6  # luminosité
         packet_before[12] = 0xff
-        self.__apply_packets(packet_before)
+        self.__apply_unique_packet(packet_before)
         #
         self.__apply_packets(packets, indiv=True)
         #
@@ -446,4 +457,4 @@ class dtv2:
         packet_after[8] = 0x9
         packet_after[12] = 0xff
         packet_after[16] = 0xff
-        self.__apply_packets(packet_after)
+        self.__apply_unique_packet(packet_after)
