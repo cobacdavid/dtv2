@@ -101,8 +101,8 @@ class dtv2:
             # arrow pad
             'arrow': ['left', 'right', 'down', 'up'],
             # function aka row K
-            'function': ['esc'] + [f'f{i}' for i in range(1, 1 + 12)] +\
-            ['PS', 'SL', 'PB'],
+            'function': ['esc'] + [f'f{i}' for i in range(1, 1 + 12)],
+            'other': ['PS', 'SL', 'PB'],
             # edition keys aka control
             'edition': ['ins', 'home', 'p-up', 'del', 'end', 'p-down'],
             # alphanumeric: main part of the keyboard
@@ -117,8 +117,17 @@ class dtv2:
              get_key_locale_name(0x64, self._keys), get_key_locale_name(0x10, self._keys),
              get_key_locale_name(0x36, self._keys), get_key_locale_name(0x37, self._keys),
              get_key_locale_name(0x38, self._keys),
-             'space', 'FN', 'compo']
+             'space', 'FN', 'compo'],
+            # keypad digits
+            'kpdigits': [f'kp{i}' for i in range(10)],
+            'kpsymbols': ['kpnlk', 'kpdiv', 'kpmul', 'kpsub', 'kpadd', 'kpdot', 'kpent']
         })
+        # create extended numeric keypad category
+        self._category_keys['kpnum'] = self._category_keys['kpdigits'] + ['kpdot']
+        self._category_keys['keypad'] =  self._category_keys['kpnum'] +\
+            self._category_keys['kpsymbols']
+        # not a deepcopy: control and edition point to the same list
+        self._category_keys['numpad'] = self._category_keys['keypad']
         # not a deepcopy: control and edition point to the same list
         self._category_keys['control'] = self._category_keys['edition']
         # backward compatibility

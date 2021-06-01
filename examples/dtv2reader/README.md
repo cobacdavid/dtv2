@@ -30,8 +30,15 @@ Here is an example (`config_awesome.json` file):
 Key' dictionary may be `kbd` (whole keyboeard), `cat` (category) or
 `key` (individual key).
 
-`cat` is a dictionary, possible keys are `letters`, `digits`,
-`mod`, `arrow`, `function`, `edition` and `alphanumeric`.
+`cat` is a dictionary, possible keys are:
+
+```
+'row K', 'row E', 'row D', 'row C', 'row B', 'row A',
+'letters', 'digits', 'mod', 'arrow', 'function', 'other',
+'edition', 'alphanumeric', 'kpdigits', 'kpsymbols', 'kpnum',
+'keypad', 'numpad', 'control', 'arrows'
+
+```
 
 `key` is a dicitonary, possible keys are key names.
 

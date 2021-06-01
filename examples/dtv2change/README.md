@@ -24,8 +24,15 @@ To change -without saving- whole keyboard: `$ dtv2change -kbd red`
 
 To change -without saving- a category: `$ dtv2change -cat letters yellow`
 
-Possible categories are `letters`, `digits`, `mod`, `arrow`,
-`function`, `edition` and `alphanumeric`.
+Possible categories are:
+
+```
+'row K', 'row E', 'row D', 'row C', 'row B', 'row A',
+'letters', 'digits', 'mod', 'arrow', 'function', 'other',
+'edition', 'alphanumeric', 'kpdigits', 'kpsymbols', 'kpnum',
+'keypad', 'numpad', 'control', 'arrows'
+
+```
 
 To change -without saving- a key: `$ dtv2change -key space blue`
 
