@@ -2,7 +2,7 @@
 __author__ = "david cobac"
 __email__ = "david.cobac@gmail.com"
 __year__ = 2020
-__last_modified__ = 20210624
+__last_modified__ = 20210625
 
 import argparse
 import dtv2
@@ -12,6 +12,7 @@ import os
 import re
 import ast
 import copy
+import time
 
 
 parseur_args = argparse.ArgumentParser(
@@ -73,19 +74,31 @@ class dtv2change:
 
     def __init__(self):
         self.dico_change = {}
+        self.dico_touches = {}
         self.clavier = dtv2.dtv2()
 
     def apply_changes(self):
+        self.only_keys()
+        self.clavier.key_set(self.dico_touches)
+
+    def only_keys(self):
+        self.dico_touches = {}
         if 'kbd' in self.dico_change:
-            self.clavier.kbd(user_to_color_tuple(self.dico_change['kbd']))
-        #
+            for k in self.clavier._keys:
+                self.dico_touches[k] = user_to_color_tuple(
+                    self.dico_change['kbd']
+                )
         if 'cat' in self.dico_change:
-            for k, v in self.dico_change['cat'].items():
-                self.clavier.category(k, user_to_color_tuple(v))
-        #
+            for categ in self.dico_change['cat']:
+                for k in self.clavier._category_keys[categ]:
+                    self.dico_touches[k] = user_to_color_tuple(
+                        self.dico_change['cat'][categ]
+                    )
         if 'key' in self.dico_change:
-            for k, v in self.dico_change['key'].items():
-                self.clavier.key(k, user_to_color_tuple(v))
+            for k in self.dico_change['key']:
+                self.dico_touches[k] = user_to_color_tuple(
+                    self.dico_change['key'][k]
+                )
 
     def read_file(self):
         with open(dtv2change.fichier_config) as fh:

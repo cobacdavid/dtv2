@@ -37,8 +37,8 @@ Live change and eventually store.
 
 ``` bash
 
-$ dtv2change -h                                                           
-usage: dtv2change [-h] [-V] [-r] [-n] [-chg] [-kbd KEYBOARD] [-cat CATEGORY [CATEGORY ...]] [-key KEY [KEY ...]]
+$ ./bin/dtv2change -h
+usage: dtv2change [-h] [-V] [-r] [-n] [-a] [-kbd KEYBOARD] [-cat CATEGORY [CATEGORY ...]] [-key KEY [KEY ...]]
 
 Change Drevo tyrfing keys colors
 
@@ -47,13 +47,14 @@ optional arguments:
   -V, --version         display version (last modif. date)
   -r, --read            read and apply saved config
   -n, --new             replace or create config file
-  -chg, --change        change config with args and store changes
+  -a, --append          change config with args and store changes
   -kbd KEYBOARD, --keyboard KEYBOARD
-                        svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)
+                        svg_color_name or hex coloror [rgb|hsl]=(.25,1,.5)
   -cat CATEGORY [CATEGORY ...], --category CATEGORY [CATEGORY ...]
-                        category_name svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)
+                        category_name svg_color_name or hex coloror [rgb|hsl]=(.25,1,.5)
   -key KEY [KEY ...], --key KEY [KEY ...]
-                        key_name svg_color_name or hex color or [rgb|hsl]=(.25,1,.5)
+                        key_name svg_color_name or hex coloror [rgb|hsl]=(.25,1,.5)
+
 
 
 ```
