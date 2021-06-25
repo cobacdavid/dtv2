@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 __author__ = "david cobac"
-__email__ = "david.cobac @ gmail.com"
+__email__ = "david.cobac@gmail.com"
 __year__ = 2020
-__last_modified__ = 20210524
+__last_modified__ = 20210625
 
 import argparse
 import dtv2
@@ -21,11 +21,11 @@ parseur_args.add_argument('-V', '--version',
 args = parseur_args.parse_args()
 
 
-def user_entry_to_color_tuple(user_color):
+def user_to_color_tuple(user_color):
     """ return a RGB int tuple so it can be used
     with dtv2
 
-    user_color: str object 
+    user_color: str object
     """
 
     # searching for rgb or hsl color writing
@@ -48,27 +48,33 @@ def user_entry_to_color_tuple(user_color):
 
 
 def apply_changes(kbd, dico):
-    dico_final = {}
-    #
+    kbd.key_set(only_keys(kbd, dico))
+
+
+def only_keys(kbd, dico):
+    dico_touches = {}
     if 'kbd' in dico:
-        for key in kbd._keys:
-            dico_final[key] = user_entry_to_color_tuple(dico['kbd'])
-    #
+        for k in kbd._keys:
+            dico_touches[k] = user_to_color_tuple(
+                dico['kbd']
+            )
     if 'cat' in dico:
-        for cat, v in dico['cat'].items():
-            for key in kbd._category_keys[cat]:
-                dico_final[key] = user_entry_to_color_tuple(v)
-    #
+        for categ in dico['cat']:
+            for k in kbd._category_keys[categ]:
+                dico_touches[k] = user_to_color_tuple(
+                    dico['cat'][categ]
+                )
     if 'key' in dico:
-        for key, v in dico['key'].items():
-            dico_final[key] = user_entry_to_color_tuple(v)
-    #
-    #
-    kbd.key_set(dico_final)
+        for k in dico['key']:
+            dico_touches[k] = user_to_color_tuple(
+                dico['key'][k]
+            )
+    return dico_touches
 
 
 if args.version:
     print(f"dtv2reader version {__last_modified__}")
+    quit()
 
 clavier = dtv2.dtv2()
 

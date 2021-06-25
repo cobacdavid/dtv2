@@ -12,7 +12,6 @@ import os
 import re
 import ast
 import copy
-import time
 
 
 parseur_args = argparse.ArgumentParser(
