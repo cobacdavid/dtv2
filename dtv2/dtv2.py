@@ -1,5 +1,6 @@
 __author__ = "david cobac"
-__contributors_page__ = "https://github.com/cobacdavid/dtv2/graphs/contributors"
+__contributors_page__ = "https://github.com/cobacdavid/dtv2" \
+    "/graphs/contributors"
 __email__ = "david.cobac @ gmail.com"
 __twitter__ = "https://twitter.com/david_cobac"
 __github__ = "https://github.com/cobacdavid"
@@ -57,7 +58,7 @@ class dtv2:
              "prefix": [0x6, 0xbe, 0x19, 0x0, 0x1, 0x1, 0xe],
              "afterp": [0x6, 0xbe, 0x15, 0x0, 0x2, 0x1, 0x1]}
             }
-    #
+
     def __init__(self, lcl=None):
         self.__init_packet()
         self.iface = None
@@ -80,8 +81,8 @@ class dtv2:
             lang_text = importlib.resources.read_text(__package__, lang_file)
         #
         json_keys = json.loads(lang_text)
-            # parse lang_file row (of keyboard) by row 
-            # and convert values: str -> int
+        # parse lang_file row (of keyboard) by row
+        # and convert values: str -> int
         self._category_keys = {}
         self._keys = {}
         for row in json_keys:
@@ -97,7 +98,8 @@ class dtv2:
             # digits
             'digits': string.digits,
             # mod keys
-            'mod': ['esc', 'lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl'],
+            'mod': ['esc', 'lshift', 'rshift', 'lctrl',
+                    'win', 'lalt', 'ralt', 'rctrl'],
             # arrow pad
             'arrow': ['left', 'right', 'down', 'up'],
             # function aka row K
@@ -106,26 +108,37 @@ class dtv2:
             # edition keys aka control
             'edition': ['ins', 'home', 'p-up', 'del', 'end', 'p-down'],
             # alphanumeric: main part of the keyboard
-            'alphanumeric': list(string.ascii_lowercase) + list(string.digits) +\
-            ['lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl'] +\
-            # and now row by row:
-            [get_key_locale_name(0x35, self._keys), get_key_locale_name(0x2d, self._keys),
-             get_key_locale_name(0x2e, self._keys), 'BACKS',
-             'tab', get_key_locale_name(0x2f, self._keys), get_key_locale_name(0x30, self._keys),
-             'caps', get_key_locale_name(0x34, self._keys), get_key_locale_name(0x32, self._keys),
-             'enter',
-             get_key_locale_name(0x64, self._keys), get_key_locale_name(0x10, self._keys),
-             get_key_locale_name(0x36, self._keys), get_key_locale_name(0x37, self._keys),
-             get_key_locale_name(0x38, self._keys),
-             'space', 'FN', 'compo'],
+            'alphanumeric': list(string.ascii_lowercase) + list(string.digits)\
+            + ['lshift', 'rshift', 'lctrl', 'win', 'lalt', 'ralt', 'rctrl']\
+            + [get_key_locale_name(0x35, self._keys),
+               get_key_locale_name(0x2d, self._keys),
+               get_key_locale_name(0x2e, self._keys),
+               'BACKS',
+               'tab',
+               get_key_locale_name(0x2f, self._keys),
+               get_key_locale_name(0x30, self._keys),
+               'caps',
+               get_key_locale_name(0x34, self._keys),
+               get_key_locale_name(0x32, self._keys),
+               'enter',
+               get_key_locale_name(0x64, self._keys),
+               get_key_locale_name(0x10, self._keys),
+               get_key_locale_name(0x36, self._keys),
+               get_key_locale_name(0x37, self._keys),
+               get_key_locale_name(0x38, self._keys),
+               'space',
+               'FN',
+               'compo'],
             # keypad digits
             'kpdigits': [f'kp{i}' for i in range(10)],
-            'kpsymbols': ['kpnlk', 'kpdiv', 'kpmul', 'kpsub', 'kpadd', 'kpdot', 'kpent']
+            'kpsymbols': ['kpnlk', 'kpdiv', 'kpmul', 'kpsub',
+                          'kpadd', 'kpdot', 'kpent']
         })
         # create extended numeric keypad category
-        self._category_keys['kpnum'] = self._category_keys['kpdigits'] + ['kpdot']
-        self._category_keys['keypad'] =  self._category_keys['kpnum'] +\
-            self._category_keys['kpsymbols']
+        self._category_keys['kpnum'] = self._category_keys['kpdigits'] \
+            + ['kpdot']
+        self._category_keys['keypad'] = self._category_keys['kpnum'] \
+            + self._category_keys['kpsymbols']
         # not a deepcopy: control and edition point to the same list
         self._category_keys['numpad'] = self._category_keys['keypad']
         # not a deepcopy: control and edition point to the same list
@@ -138,7 +151,7 @@ class dtv2:
         """ getter for localisation string
 
         """
-        
+
         return self._local
 
     @local.setter
@@ -146,7 +159,7 @@ class dtv2:
         """ setter for localisation string
 
         """
-        
+
         if lcl is None:
             self._local = locale.setlocale(locale.LC_ALL, '')[:2]
         else:
@@ -182,7 +195,8 @@ class dtv2:
             try:
                 self.dev.open_path(self.iface['path'])
             except:
-                raise Exception("Impossible to reach device... unplug and plug your keyboard.")
+                raise Exception("Impossible to reach device..."
+                                " unplug and plug your keyboard.")
 
     def __write_device(self):
         """write packet to the device
@@ -409,9 +423,8 @@ class dtv2:
             if type(args) == dict:
                 id_keys = list(args.keys())
                 rgb_colors = list(args.values())
-            if (type(args) == list
+            if (type(args) == list or type(args) == tuple):
                 # or type(args) == set
-                or type(args) == tuple):
                 id_keys, rgb_colors = [], []
                 for key, color in args:
                     id_keys.append(key)
