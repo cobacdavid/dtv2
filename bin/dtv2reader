@@ -18,6 +18,9 @@ parseur_args.add_argument('filename', help='config_file_name (json)')
 parseur_args.add_argument('-V', '--version',
                           action="store_true",
                           help='display version (last modif. date)')
+parseur_args.add_argument('-o', '--json',
+                          action="store_true",
+                          help='outputs keys assignment json')
 args = parseur_args.parse_args()
 
 
@@ -48,7 +51,11 @@ def user_to_color_tuple(user_color):
 
 
 def apply_changes(kbd, dico):
-    kbd.key_set(only_keys(kbd, dico))
+    # build new dict
+    new_dict = only_keys(kbd, dico)
+    kbd.key_set(new_dict)
+    if args.json:
+        print(json.dumps(new_dict))
 
 
 def only_keys(kbd, dico):
